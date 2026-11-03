@@ -161,7 +161,7 @@ export default function ServerConfigurator() {
         />
 
         <Reveal className="relative mx-auto max-w-7xl">
-          <div aria-hidden className="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-r from-brand-cyan/15 via-brand/10 to-brand-violet/15 blur-3xl" />
+          
 
           <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr] lg:gap-5">
             {/* Controls */}
@@ -184,9 +184,9 @@ export default function ServerConfigurator() {
                         <AnimatePresence mode="popLayout" initial={false}>
                           <motion.span
                             key={value}
-                            initial={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                            exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.25 }}
                             className="font-display text-lg font-medium tabular-nums md:text-xl"
                           >

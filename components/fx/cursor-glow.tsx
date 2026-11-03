@@ -38,7 +38,7 @@ export function CursorGlow() {
   return (
     <motion.div
       aria-hidden
-      className="pointer-events-none fixed left-0 top-0 z-[1] h-[560px] w-[560px] rounded-full opacity-60 mix-blend-soft-light dark:opacity-100 dark:mix-blend-screen"
+      className="pointer-events-none fixed left-0 top-0 z-[1] h-[480px] w-[480px] rounded-full opacity-50 will-change-transform dark:opacity-80"
       style={{
         x: sx,
         y: sy,

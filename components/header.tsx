@@ -61,15 +61,15 @@ export function Header() {
         className={cn(
           "mx-auto flex h-14 max-w-7xl items-center justify-between rounded-full px-2 pl-3 transition-all duration-500 ease-out md:h-16 md:pl-5",
           scrolled
-            ? "glass shadow-[0_20px_50px_-20px_rgba(0,0,0,0.35)]"
+            ? "glass-blur shadow-[0_20px_50px_-20px_rgba(0,0,0,0.35)]"
             : "border border-transparent bg-transparent",
         )}
       >
         <div className="flex items-center gap-1.5">
-          <MobileSidebar />
+          {mounted ? <MobileSidebar /> : <span aria-hidden className="h-9 w-9 md:hidden" />}
           <Link href="/" className="group flex items-center gap-2.5" aria-label="Listopad">
             <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand/15 to-brand-violet/10 ring-1 ring-brand/20 transition-transform duration-500 group-hover:rotate-[-6deg] group-hover:scale-105">
-              <Image src="/images/logo-icon.png" alt="" width={24} height={20} className="h-5 w-auto" priority />
+              <Image src="/images/logo-icon.png" alt="" width={25} height={20} className="h-5 w-[25px]" priority />
             </span>
             <span className="font-display text-[1.05rem] font-medium tracking-tight">Listopad</span>
           </Link>
@@ -116,13 +116,13 @@ export function Header() {
             <AnimatePresence>
               {productsOpen && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.98, filter: "blur(6px)" }}
-                  animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, y: 6, scale: 0.98, filter: "blur(4px)" }}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                   className="absolute left-1/2 top-full w-[560px] -translate-x-1/2 pt-3"
                 >
-                  <div className="glass grid grid-cols-2 gap-1 rounded-3xl bg-popover/90 p-2">
+                  <div className="glass-blur grid grid-cols-2 gap-1 rounded-3xl bg-popover/90 p-2">
                     {productLinks.map((p) => (
                       <Link
                         key={p.href + p.label}
@@ -184,38 +184,53 @@ export function Header() {
             </span>
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 gap-1.5 px-2.5 text-xs font-semibold" aria-label={t.common.language}>
-                <Globe className="h-[18px] w-[18px]" />
-                <span className="hidden sm:inline">{LANGUAGES.find((l) => l.code === language)?.short}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-40">
-              {LANGUAGES.map((l) => (
-                <DropdownMenuItem key={l.code} onClick={() => setLanguage(l.code)} className="justify-between">
-                  {l.label}
-                  {language === l.code && <Check className="h-4 w-4 text-brand" />}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Radix menus generate ids that can differ between server and client
+              HTML, so they render only after mount; same-size placeholders before. */}
+          {mounted ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-9 gap-1.5 px-2.5 text-xs font-semibold" aria-label={t.common.language}>
+                  <Globe className="h-[18px] w-[18px]" />
+                  <span className="hidden sm:inline">{LANGUAGES.find((l) => l.code === language)?.short}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-40">
+                {LANGUAGES.map((l) => (
+                  <DropdownMenuItem key={l.code} onClick={() => setLanguage(l.code)} className="justify-between">
+                    {l.label}
+                    {language === l.code && <Check className="h-4 w-4 text-brand" />}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <span aria-hidden className="inline-flex h-9 items-center gap-1.5 px-2.5 text-xs font-semibold">
+              <Globe className="h-[18px] w-[18px]" />
+              <span className="hidden sm:inline">TJ</span>
+            </span>
+          )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="hidden h-9 w-9 md:flex" aria-label={t.common.account}>
-                <User className="h-[18px] w-[18px]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-44">
-              <DropdownMenuItem asChild>
-                <a href="https://my.listopad.tj/auth/login">{t.nav.login}</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="https://my.listopad.tj/auth/signup">{t.nav.register}</a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {mounted ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden h-9 w-9 md:flex" aria-label={t.common.account}>
+                  <User className="h-[18px] w-[18px]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-44">
+                <DropdownMenuItem asChild>
+                  <a href="https://my.listopad.tj/auth/login">{t.nav.login}</a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="https://my.listopad.tj/auth/signup">{t.nav.register}</a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <span aria-hidden className="hidden h-9 w-9 items-center justify-center md:inline-flex">
+              <User className="h-[18px] w-[18px]" />
+            </span>
+          )}
 
           <Magnetic className="ml-1 hidden md:inline-flex" strength={0.25}>
             <Button asChild className="h-10">

@@ -11,6 +11,7 @@ type RevealProps = HTMLMotionProps<"div"> & {
   /** Vertical travel in px before the element settles. */
   y?: number
   x?: number
+  /** Adds a blur-in; off by default because animating filters is expensive. */
   blur?: boolean
   once?: boolean
   amount?: number
@@ -22,15 +23,15 @@ export function Reveal({
   delay = 0,
   y = 28,
   x = 0,
-  blur = true,
+  blur = false,
   once = true,
   amount = 0.25,
   ...rest
 }: RevealProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y, x, filter: blur ? "blur(8px)" : "blur(0px)" }}
-      whileInView={{ opacity: 1, y: 0, x: 0, filter: "blur(0px)" }}
+      initial={blur ? { opacity: 0, y, x, filter: "blur(8px)" } : { opacity: 0, y, x }}
+      whileInView={blur ? { opacity: 1, y: 0, x: 0, filter: "blur(0px)" } : { opacity: 1, y: 0, x: 0 }}
       viewport={{ once, amount }}
       transition={{ duration: 0.9, delay, ease: EASE }}
       {...rest}
@@ -46,8 +47,8 @@ const container: Variants = {
 }
 
 const item: Variants = {
-  hidden: { opacity: 0, y: 26, filter: "blur(6px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.85, ease: EASE } },
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.85, ease: EASE } },
 }
 
 type StaggerProps = HTMLMotionProps<"div"> & { children: ReactNode; stagger?: number; amount?: number }

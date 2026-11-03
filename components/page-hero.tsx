@@ -33,9 +33,16 @@ export function PageHero({ title, description, eyebrow, icon: Icon, children, al
   return (
     <section ref={ref} className={cn("relative isolate overflow-hidden pb-16 pt-36 md:pb-24 md:pt-44", className)}>
       <motion.div aria-hidden style={{ y: orbY }} className="mask-fade-b pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-brand/20 blur-[120px]" />
-        <div className="absolute left-[15%] top-40 h-60 w-60 rounded-full bg-brand-violet/15 blur-[90px]" />
-        <div className="absolute right-[12%] top-24 h-52 w-52 rounded-full bg-brand-cyan/15 blur-[90px]" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: [
+              "radial-gradient(28rem 22rem at 50% 30%, color-mix(in oklab, var(--brand) 22%, transparent), transparent 70%)",
+              "radial-gradient(16rem 14rem at 18% 45%, color-mix(in oklab, var(--brand-violet) 16%, transparent), transparent 70%)",
+              "radial-gradient(14rem 12rem at 85% 30%, color-mix(in oklab, var(--brand-cyan) 16%, transparent), transparent 70%)",
+            ].join(","),
+          }}
+        />
       </motion.div>
       <div aria-hidden className="bg-grid mask-radial pointer-events-none absolute inset-0 -z-10 opacity-80" />
 
@@ -77,8 +84,8 @@ export function PageHero({ title, description, eyebrow, icon: Icon, children, al
 
           {description && (
             <motion.p
-              initial={{ opacity: 0, y: 16, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.45, ease: EASE }}
               className={cn(
                 "mt-6 text-pretty text-lg leading-relaxed text-muted-foreground md:text-xl",

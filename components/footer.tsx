@@ -49,7 +49,7 @@ export function Footer() {
           <div className="space-y-6">
             <Link href="/" className="inline-flex items-center gap-2.5">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand/15 to-brand-violet/10 ring-1 ring-brand/20">
-                <Image src="/images/logo-icon.png" alt="" width={24} height={20} className="h-5 w-auto" />
+                <Image src="/images/logo-icon.png" alt="" width={25} height={20} className="h-5 w-[25px]" />
               </span>
               <span className="font-display text-xl font-medium tracking-tight">Listopad</span>
             </Link>

@@ -101,6 +101,8 @@ export function DocsPageRenderer({ title, description, blocks }: DocsPageProps) 
                       src={shot.src}
                       alt={shot.alt[lang]}
                       fill
+                      sizes="(min-width: 1024px) 860px, 100vw"
+                      priority={index === 0 && shotIndex === 0}
                       className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                     />
                   </div>

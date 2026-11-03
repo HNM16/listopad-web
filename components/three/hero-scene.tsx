@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import type { MotionValue } from "framer-motion"
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import * as THREE from "three"
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js"
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js"
@@ -17,6 +17,9 @@ const BLADE_H = 0.46
 const BLADE_D = 2.3
 const BLADE_GAP = 0.62
 const INTRO_SECONDS = 2.8
+/** Aspect ratio of the pre-rendered poster; the live scene uses the same framing rule. */
+export const POSTER_ASPECT = 0.9
+const BASE_SCALE = 0.85
 
 const PALETTE = {
   dark: {
@@ -45,15 +48,6 @@ const PALETTE = {
 
 type Palette = (typeof PALETTE)[keyof typeof PALETTE]
 
-export type HeroSceneProps = {
-  /** 0 → hero fully visible, 1 → hero scrolled out. */
-  progress: MotionValue<number>
-  isDark: boolean
-  reducedMotion: boolean
-  /** Rendering is paused when false (off-screen / tab hidden). */
-  active: boolean
-  onReady?: () => void
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -107,12 +101,12 @@ function StudioEnvironment() {
 /*  Server stack                                                               */
 /* -------------------------------------------------------------------------- */
 
-function ServerStack({ palette, glow, progress, reducedMotion, lite }: { palette: Palette; glow: THREE.Texture; progress: MotionValue<number>; reducedMotion: boolean; lite: boolean }) {
+function ServerStack({ palette, glow, progress, reducedMotion }: { palette: Palette; glow: THREE.Texture; progress: MotionValue<number>; reducedMotion: boolean }) {
   const blades = useRef<(THREE.Group | null)[]>([])
   const ledMats = useRef<THREE.MeshStandardMaterial[]>([])
   const scanners = useRef<(THREE.Mesh | null)[]>([])
 
-  const bladeGeo = useMemo(() => new RoundedBoxGeometry(BLADE_W, BLADE_H, BLADE_D, 5, 0.09), [])
+  const bladeGeo = useMemo(() => new RoundedBoxGeometry(BLADE_W, BLADE_H, BLADE_D, 3, 0.09), [])
   const ventGeo = useMemo(() => new THREE.BoxGeometry(0.035, BLADE_H * 0.52, 0.02), [])
   const ledGeo = useMemo(() => new THREE.BoxGeometry(1.9, 0.045, 0.02), [])
   const scanGeo = useMemo(() => new THREE.BoxGeometry(0.32, 0.06, 0.025), [])
@@ -138,9 +132,8 @@ function ServerStack({ palette, glow, progress, reducedMotion, lite }: { palette
         color: "#dff1ff",
         metalness: 0,
         roughness: 0.08,
-        // transmission needs an extra render pass; the lite tier swaps to plain opacity
-        transmission: lite ? 0 : 1,
-        opacity: lite ? 0.35 : 1,
+        // Plain translucency instead of `transmission`, which costs a full extra render pass.
+        opacity: 0.42,
         thickness: 0.6,
         ior: 1.45,
         iridescence: 0.6,
@@ -149,7 +142,7 @@ function ServerStack({ palette, glow, progress, reducedMotion, lite }: { palette
         envMapIntensity: 1.4,
         transparent: true,
       }),
-    [lite],
+    [],
   )
 
   const ventMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#05070c", metalness: 0.4, roughness: 0.6 }), [])
@@ -221,7 +214,7 @@ function ServerStack({ palette, glow, progress, reducedMotion, lite }: { palette
         const centered = i - (BLADES - 1) / 2
         return (
           <group key={i} ref={(el) => void (blades.current[i] = el)} position={[0, centered * BLADE_GAP, 0]}>
-            <mesh geometry={bladeGeo} material={isTop ? glass : metal} castShadow receiveShadow />
+            <mesh geometry={bladeGeo} material={isTop ? glass : metal} />
 
             {isTop && <mesh geometry={coreGeo} material={coreMat} />}
 
@@ -362,26 +355,57 @@ function Particles({ palette, glow, count, reducedMotion }: { palette: Palette; 
   )
 }
 
+/** Baked soft contact shadow: a dark radial sprite instead of a real-time shadow-map pass. */
+function useShadowTexture() {
+  return useMemo(() => {
+    const size = 128
+    const canvas = document.createElement("canvas")
+    canvas.width = canvas.height = size
+    const ctx = canvas.getContext("2d")!
+    const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+    g.addColorStop(0, "rgba(0,0,0,1)")
+    g.addColorStop(0.45, "rgba(0,0,0,0.55)")
+    g.addColorStop(1, "rgba(0,0,0,0)")
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, size, size)
+    const tex = new THREE.CanvasTexture(canvas)
+    tex.colorSpace = THREE.SRGBColorSpace
+    return tex
+  }, [])
+}
+
 function Floor({ palette, glow }: { palette: Palette; glow: THREE.Texture }) {
+  const shadow = useShadowTexture()
+  useEffect(() => () => shadow.dispose(), [shadow])
   return (
     <group position={[0, -2.35, 0]}>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[30, 30]} />
-        <shadowMaterial transparent opacity={palette.shadowOpacity} />
+      <mesh rotation-x={-Math.PI / 2} scale={[1, 0.62, 1]}>
+        <planeGeometry args={[7.5, 7.5]} />
+        <meshBasicMaterial map={shadow} transparent opacity={palette.shadowOpacity * 1.6} depthWrite={false} />
       </mesh>
       <mesh rotation-x={-Math.PI / 2} position-y={0.005}>
         <planeGeometry args={[9, 9]} />
-        <meshBasicMaterial map={glow} color={palette.floorGlow} transparent opacity={0.55} depthWrite={false} blending={palette.blending} />
+        <meshBasicMaterial map={glow} color={palette.floorGlow} transparent opacity={0.5} depthWrite={false} blending={palette.blending} />
       </mesh>
     </group>
   )
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Rig: layout, pointer parallax, cinematic camera                            */
+/*  Rig: framing, pointer parallax, camera                                     */
 /* -------------------------------------------------------------------------- */
 
-function Rig({ children, progress, reducedMotion }: { children: React.ReactNode; progress: MotionValue<number>; reducedMotion: boolean }) {
+function Rig({
+  children,
+  progress,
+  reducedMotion,
+  intro,
+}: {
+  children: React.ReactNode
+  progress: MotionValue<number>
+  reducedMotion: boolean
+  intro: boolean
+}) {
   const root = useRef<THREE.Group>(null)
   const spin = useRef<THREE.Group>(null)
   const { camera, size } = useThree()
@@ -393,63 +417,47 @@ function Rig({ children, progress, reducedMotion }: { children: React.ReactNode;
     if (!g || !s) return
     const t = state.clock.elapsedTime
     if (start.current === null) start.current = t
+    const local = t - start.current
     const p = progress.get()
-    const aspect = size.width / size.height
-    const wide = aspect > 1.05
 
-    // Responsive composition: object sits right of the headline on wide screens,
-    // above it on portrait screens.
-    const { width: vw, height: vh } = state.viewport.getCurrentViewport(camera, ORIGIN)
-    const scale = wide ? THREE.MathUtils.clamp(vw / 12.5, 0.7, 1.2) : THREE.MathUtils.clamp(Math.min(vw / 8.6, vh / 7.2), 0.45, 0.9)
-    const tx = wide ? vw * 0.24 : 0
-    const ty = wide ? 0.15 : vh * 0.04
-    // In still mode frames are rendered on demand, so snap instead of easing.
+    // Same framing rule as the poster image (object-fit: contain at POSTER_ASPECT):
+    // fill the height on wide boxes, fit the width on narrow ones.
+    const aspect = size.width / size.height
+    const scale = BASE_SCALE * Math.min(1, aspect / POSTER_ASPECT)
     const ease = (cur: number, target: number, lambda: number) => (reducedMotion ? target : damp(cur, target, lambda, delta))
-    g.position.x = ease(g.position.x, tx, 4)
-    g.position.y = ease(g.position.y, ty - p * 1.2, 4)
+    g.position.y = ease(g.position.y, -p * 1.2, 4)
     g.scale.setScalar(ease(g.scale.x, scale * (1 - p * 0.12), 4))
 
-    // Pointer parallax + slow showroom rotation.
+    // Pointer parallax + slow showroom rotation (both start at the poster pose).
     const px = reducedMotion ? 0 : state.pointer.x
     const py = reducedMotion ? 0 : state.pointer.y
-    const idle = reducedMotion ? 0 : Math.sin(t * 0.25) * 0.35
-    s.rotation.y = ease(s.rotation.y, -0.55 + idle + px * 0.45 + p * 0.9, 3)
-    s.rotation.x = ease(s.rotation.x, 0.12 - py * 0.16 + p * 0.25, 3)
+    const idle = reducedMotion ? 0 : Math.sin(local * 0.25) * 0.35
+    s.rotation.y = ease(s.rotation.y, -0.55 + idle + px * 0.35 + p * 0.9, 3)
+    s.rotation.x = ease(s.rotation.x, 0.12 - py * 0.12 + p * 0.25, 3)
 
-    // Cinematic dolly-in on load, then a gentle breathing drift; scroll pulls back and up.
-    const k = reducedMotion ? 1 : easeOutCubic(Math.min(1, (t - start.current) / INTRO_SECONDS))
+    // Optional dolly-in; skipped when a poster was shown so the hand-off is seamless.
+    const k = reducedMotion || !intro ? 1 : easeOutCubic(Math.min(1, local / INTRO_SECONDS))
     const camZ = THREE.MathUtils.lerp(17, 11.2, k) + p * 2.2
     const camY = THREE.MathUtils.lerp(4.2, 1.1, k) + p * 1.6
-    const camX = reducedMotion ? 0 : Math.sin(t * 0.18) * 0.25 + px * 0.35
+    const camX = reducedMotion ? 0 : Math.sin(local * 0.18) * 0.2 + px * 0.25
     camera.position.set(camX, camY, camZ)
     camera.lookAt(0, -0.1 + p * 0.4, 0)
   })
 
   return (
-    <group ref={root}>
-      <group ref={spin}>{children}</group>
+    <group ref={root} scale={BASE_SCALE}>
+      <group ref={spin} rotation={[0.12, -0.55, 0]}>
+        {children}
+      </group>
     </group>
   )
 }
 
 function Lights({ isDark }: { isDark: boolean }) {
-  const key = useRef<THREE.DirectionalLight>(null)
-  useLayoutEffect(() => {
-    const l = key.current
-    if (!l) return
-    l.shadow.mapSize.set(1024, 1024)
-    l.shadow.camera.left = -6
-    l.shadow.camera.right = 6
-    l.shadow.camera.top = 6
-    l.shadow.camera.bottom = -6
-    l.shadow.radius = 10
-    l.shadow.blurSamples = 16
-    l.shadow.bias = -0.0005
-  }, [])
   return (
     <>
       <ambientLight intensity={isDark ? 0.25 : 0.6} />
-      <directionalLight ref={key} position={[1.5, 10, 3]} intensity={isDark ? 2.6 : 2.8} castShadow />
+      <directionalLight position={[1.5, 10, 3]} intensity={isDark ? 2.6 : 2.8} />
       <pointLight position={[-4.5, 1.5, -3]} intensity={isDark ? 60 : 30} color="#1f8bff" distance={14} />
       <pointLight position={[4, -1, 3]} intensity={isDark ? 22 : 12} color="#2fd4f0" distance={10} />
       <pointLight position={[0, 4, -4]} intensity={isDark ? 25 : 10} color="#8a7bff" distance={12} />
@@ -462,15 +470,15 @@ function Scene({
   progress,
   reducedMotion,
   particleCount,
-  lite,
-  onTier,
+  intro,
+  onDegrade,
 }: {
   isDark: boolean
   progress: MotionValue<number>
   reducedMotion: boolean
   particleCount: number
-  lite: boolean
-  onTier: (tier: 0 | 1 | 2) => void
+  intro: boolean
+  onDegrade?: () => void
 }) {
   const glow = useGlowTexture()
   const palette = isDark ? PALETTE.dark : PALETTE.light
@@ -481,12 +489,12 @@ function Scene({
     invalidate()
     const id = requestAnimationFrame(() => invalidate())
     return () => cancelAnimationFrame(id)
-  }, [invalidate, reducedMotion, lite, isDark])
+  }, [invalidate, reducedMotion, isDark])
 
   return (
     <>
       <StudioEnvironment />
-      <PerfGuard onTier={onTier} />
+      {onDegrade && <PerfGuard onDegrade={onDegrade} />}
       <Lights isDark={isDark} />
 
       {/* backlight halo behind the hero object */}
@@ -494,10 +502,10 @@ function Scene({
         <spriteMaterial map={glow} color={palette.backlight} transparent opacity={isDark ? 0.5 : 0.45} depthWrite={false} blending={palette.blending} />
       </sprite>
 
-      <Particles palette={palette} glow={glow} count={particleCount} reducedMotion={reducedMotion} />
+      {particleCount > 0 && <Particles palette={palette} glow={glow} count={particleCount} reducedMotion={reducedMotion} />}
 
-      <Rig progress={progress} reducedMotion={reducedMotion}>
-        <ServerStack palette={palette} glow={glow} progress={progress} reducedMotion={reducedMotion} lite={lite} />
+      <Rig progress={progress} reducedMotion={reducedMotion} intro={intro}>
+        <ServerStack palette={palette} glow={glow} progress={progress} reducedMotion={reducedMotion} />
         <OrbitRings palette={palette} glow={glow} reducedMotion={reducedMotion} />
         <Floor palette={palette} glow={glow} />
       </Rig>
@@ -510,37 +518,47 @@ function Scene({
 /* -------------------------------------------------------------------------- */
 
 /**
- * Samples real frame times and steps quality down on weak GPUs:
- * tier 2 → full, 1 → dpr 1 + no shadows / transmission, 0 → static frame.
+ * Samples real frame times. Below ~40 fps it drops the pixel ratio to 1;
+ * if the device still can't keep up it asks the host to fall back to the
+ * static poster (which unmounts the canvas and frees the GPU).
  */
-function PerfGuard({ onTier }: { onTier: (tier: 0 | 1 | 2) => void }) {
-  const { setDpr, gl } = useThree()
-  const samples = useRef<number[]>([])
-  const tier = useRef<0 | 1 | 2>(2)
-  const warmup = useRef(0)
+function PerfGuard({ onDegrade }: { onDegrade: () => void }) {
+  const setDpr = useThree((st) => st.setDpr)
+  const begin = useRef<number | null>(null)
+  const windowStart = useRef(0)
+  const frames = useRef(0)
+  const lowered = useRef(false)
+  const done = useRef(false)
 
-  useFrame((_, delta) => {
-    if (tier.current === 0) return
-    // ignore the first frames (shader compilation, intro)
-    if (warmup.current < 30) {
-      warmup.current++
+  // Time-based windows (not frame counts) so a struggling device is detected
+  // within a few seconds even at very low frame rates.
+  useFrame(() => {
+    if (done.current) return
+    const now = performance.now()
+    if (begin.current === null) {
+      begin.current = now
       return
     }
-    samples.current.push(delta)
-    if (samples.current.length < 45) return
-    const avg = samples.current.reduce((a, b) => a + b, 0) / samples.current.length
-    samples.current = []
-    const fps = 1 / avg
-    if (fps < 14) {
-      tier.current = 0
-    } else if (fps < 40 && tier.current === 2) {
-      tier.current = 1
+    if (now - begin.current < 1000) return // shader compilation / first upload
+    if (windowStart.current === 0) {
+      windowStart.current = now
+      frames.current = 0
+      return
+    }
+    frames.current++
+    const elapsed = now - windowStart.current
+    if (elapsed < 1500) return
+    const fps = (frames.current * 1000) / elapsed
+    windowStart.current = now
+    frames.current = 0
+    if (fps >= 40) return
+    if (!lowered.current && fps >= 20) {
+      lowered.current = true
       setDpr(1)
-      gl.shadowMap.enabled = false
-    } else {
       return
     }
-    onTier(tier.current)
+    done.current = true
+    onDegrade()
   })
   return null
 }
@@ -549,24 +567,29 @@ function PerfGuard({ onTier }: { onTier: (tier: 0 | 1 | 2) => void }) {
 /*  Canvas                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export default function HeroScene({ progress, isDark, reducedMotion, active, onReady }: HeroSceneProps) {
-  const [tier, setTier] = useState<0 | 1 | 2>(2)
-  // Tier 0: the device can't keep up — keep the last rendered frame as a still.
-  const still = reducedMotion || tier === 0
+export type HeroSceneProps = {
+  /** 0 → hero fully visible, 1 → hero scrolled out. */
+  progress: MotionValue<number>
+  isDark: boolean
+  reducedMotion: boolean
+  /** Rendering is paused when false (off-screen / tab hidden). */
+  active: boolean
+  /** Play the camera dolly-in. Off when a poster was shown first. */
+  intro?: boolean
+  /** Number of background particles (0 disables them). */
+  particles?: number
+  onReady?: () => void
+  /** Called when the device can't sustain a usable frame rate. */
+  onDegrade?: () => void
+}
 
-  const particleCount = useMemo(() => {
-    if (typeof window === "undefined") return 500
-    const w = window.innerWidth
-    return w < 640 ? 220 : w < 1024 ? 380 : 650
-  }, [])
-
+export default function HeroScene({ progress, isDark, reducedMotion, active, intro = false, particles = 420, onReady, onDegrade }: HeroSceneProps) {
   return (
     <Canvas
-      shadows={{ type: THREE.PCFShadowMap }}
-      dpr={[1, 1.75]}
-      frameloop={!active ? "never" : still ? "demand" : "always"}
-      camera={{ position: [0, 4.2, 17], fov: 32, near: 0.1, far: 100 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      dpr={[1, 1.5]}
+      frameloop={!active ? "never" : reducedMotion ? "demand" : "always"}
+      camera={{ position: [0, intro ? 4.2 : 1.1, intro ? 17 : 11.2], fov: 32, near: 0.1, far: 100 }}
+      gl={{ antialias: true, alpha: true, powerPreference: "high-performance", preserveDrawingBuffer: false }}
       onCreated={({ gl }) => {
         gl.toneMapping = THREE.ACESFilmicToneMapping
         gl.toneMappingExposure = 1.05
@@ -578,10 +601,10 @@ export default function HeroScene({ progress, isDark, reducedMotion, active, onR
       <Scene
         isDark={isDark}
         progress={progress}
-        reducedMotion={still}
-        particleCount={particleCount}
-        lite={tier < 2}
-        onTier={setTier}
+        reducedMotion={reducedMotion}
+        particleCount={particles}
+        intro={intro}
+        onDegrade={onDegrade}
       />
     </Canvas>
   )

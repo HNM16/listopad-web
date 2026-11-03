@@ -60,7 +60,7 @@ export function HeroSection() {
       </motion.div>
 
       {/* Layer 1 — the 3D scene */}
-      <HeroVisual progress={progress} className="-z-10 bottom-auto h-[56svh] sm:h-[60svh] lg:bottom-0 lg:h-auto" />
+      <HeroVisual progress={progress} className="-z-10" />
 
       {/* Legibility scrims */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-[40svh] -z-10 h-[18svh] bg-gradient-to-b from-transparent to-background sm:top-[44svh] lg:hidden" />
@@ -202,8 +202,8 @@ function FloatingChip({
   const ty = useTransform(y, (v) => v * depth)
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9, filter: "blur(8px)" }}
-      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.1, delay, ease: EASE }}
       style={{ x: tx, y: ty }}
       className={`absolute ${className}`}

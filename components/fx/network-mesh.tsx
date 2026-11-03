@@ -43,6 +43,7 @@ export function NetworkMesh({ className }: { className?: string }) {
       {links.map(([a, b], i) => (
         <g key={i}>
           <line x1={nodes[a].x} y1={nodes[a].y} x2={nodes[b].x} y2={nodes[b].y} stroke="var(--brand)" strokeOpacity={0.14} strokeWidth={1} />
+          {i % 3 === 0 && (
           <line
             x1={nodes[a].x}
             y1={nodes[a].y}
@@ -55,12 +56,13 @@ export function NetworkMesh({ className }: { className?: string }) {
             className="mesh-flow"
             style={{ animationDelay: `${(i * 0.37) % 6}s`, animationDuration: `${5 + (i % 5)}s` }}
           />
+          )}
         </g>
       ))}
       {nodes.map((n, i) => (
         <g key={i}>
           <circle cx={n.x} cy={n.y} r={n.r * 3.2} fill="var(--brand)" opacity={0.1} />
-          <circle cx={n.x} cy={n.y} r={n.r} fill="var(--brand-cyan)" className="mesh-node" style={{ animationDelay: `${(i * 0.53) % 4}s` }} />
+          <circle cx={n.x} cy={n.y} r={n.r} fill="var(--brand-cyan)" opacity={0.8} />
         </g>
       ))}
     </svg>
