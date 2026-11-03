@@ -1,9 +1,9 @@
 "use client"
 
+import { Marquee } from "@/components/fx/marquee"
+import { Reveal } from "@/components/fx/reveal"
 import { useLanguage } from "@/hooks/use-language"
-import { motion, useInView } from "framer-motion"
 import Image from "next/image"
-import { useRef } from "react"
 
 const clients = [
   { name: "Xymo", logo: "/images/clients/xymo.webp" },
@@ -14,43 +14,36 @@ const clients = [
 
 export function ClientsSection() {
   const { t } = useLanguage()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   return (
-    <section className="py-20 bg-muted/30" ref={ref}>
+    <section className="relative py-16 md:py-24">
+      <div aria-hidden className="absolute inset-x-0 top-0 mx-auto h-px max-w-5xl bg-gradient-to-r from-transparent via-border to-transparent" />
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.5 }}
-          className="mb-12 text-center"
-        >
-          <h2 className="text-balance text-3xl font-bold">{t.clients.title}</h2>
-        </motion.div>
-
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          {clients.map((client, index) => (
-            <motion.div
-              key={client.name}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="flex items-center justify-center"
-            >
-              <div className="flex h-20 w-full items-center justify-center rounded-lg p-4 bg-card">
-                <Image
-                  src={client.logo || "/placeholder.svg"}
-                  alt={client.name}
-                  width={120}
-                  height={40}
-                  className="h-8 w-auto"
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <Reveal className="mb-10 flex flex-col items-center gap-3 text-center">
+          <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{t.home.clientsEyebrow}</span>
+          <h2 className="text-2xl font-medium md:text-3xl">{t.clients.title}</h2>
+        </Reveal>
       </div>
+
+      <Reveal delay={0.1} blur={false}>
+        <Marquee duration={30}>
+          {[...clients, ...clients].map((client, i) => (
+            <div
+              key={`${client.name}-${i}`}
+              className="glass-subtle group mx-3 flex h-24 w-56 items-center justify-center rounded-2xl px-8 transition-all duration-500 hover:border-brand/30 md:mx-4 md:w-64"
+            >
+              <Image
+                src={client.logo}
+                alt={client.name}
+                width={140}
+                height={44}
+                className="h-9 w-auto max-w-[150px] object-contain opacity-60 grayscale transition-all duration-500 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0 dark:brightness-125"
+              />
+            </div>
+          ))}
+        </Marquee>
+      </Reveal>
+      <div aria-hidden className="absolute inset-x-0 bottom-0 mx-auto h-px max-w-5xl bg-gradient-to-r from-transparent via-border to-transparent" />
     </section>
   )
 }

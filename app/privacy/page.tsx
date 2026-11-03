@@ -2,8 +2,9 @@
 
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { LegalLayout } from "@/components/legal-layout"
+import { PageHero } from "@/components/page-hero"
 import { useLanguage } from "@/hooks/use-language"
-import { motion } from "framer-motion"
 import { Shield } from "lucide-react"
 
 export default function PrivacyPage() {
@@ -141,49 +142,9 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="pt-16">
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto max-w-4xl"
-            >
-              <div className="mb-6 flex items-center justify-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500">
-                  <Shield className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <h1 className="text-balance text-center text-5xl font-bold">{pageContent.title}</h1>
-              <p className="mt-4 text-center text-sm text-muted-foreground">{pageContent.lastUpdated}</p>
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mx-auto max-w-4xl space-y-8"
-            >
-              {pageContent.sections.map((section, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 * index }}
-                  className="rounded-lg border bg-card p-6 shadow-sm"
-                >
-                  <h2 className="mb-4 text-2xl font-bold">{section.title}</h2>
-                  <p className="text-pretty leading-relaxed text-muted-foreground">{section.content}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
+      <main>
+        <PageHero icon={Shield} eyebrow={pageContent.lastUpdated} title={pageContent.title} />
+        <LegalLayout sections={pageContent.sections.map((s) => ({ title: s.title, body: s.content }))} />
       </main>
       <Footer />
     </div>

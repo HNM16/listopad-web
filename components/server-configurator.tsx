@@ -2,9 +2,12 @@
 
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { Magnetic } from "@/components/fx/magnetic"
+import { Reveal } from "@/components/fx/reveal"
+import { SectionHeading } from "@/components/section-heading"
 import { useLanguage } from "@/hooks/use-language"
-import { AnimatePresence, motion } from "framer-motion"
-import { Cpu, HardDrive, MemoryStick, Minus, Network, Plus } from "lucide-react"
+import { AnimatePresence, motion, useSpring, useTransform } from "framer-motion"
+import { ArrowRight, Cpu, Globe, HardDrive, MemoryStick, Minus, Network, Plus, type LucideIcon } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
 interface ServerConfig {
@@ -105,13 +108,6 @@ export default function ServerConfigurator() {
     return dict[language] ?? dict.tj
   }, [language])
 
-  // если хочешь — лог отладки
-  useEffect(() => {
-    // console.log("language:", language)
-    // console.log("config:", config)
-    // console.log("monthly:", monthlyPrice)
-  }, [language, config, monthlyPrice])
-
   const updateConfig = (key: keyof ServerConfig, value: number) => {
     const rounded = Math.round(value * 100) / 100
     setConfig((prev) => ({ ...prev, [key]: rounded }))
@@ -135,385 +131,194 @@ export default function ServerConfigurator() {
     })
   }
 
-  // Если в твоих translations уже есть нужные ключи — можно заменить на t.xxx
   const L = ui
 
+  const rows: {
+    key: keyof ServerConfig
+    icon: LucideIcon
+    label: string
+    min: number
+    max: number
+    ticks: number[]
+    format: (v: number) => string
+    summary: (v: number) => string
+  }[] = [
+    { key: "cpu", icon: Cpu, label: L.cpu, min: 1, max: 32, ticks: [1, 8, 16, 24, 32], format: (v) => `${v} ${L.units.vcpu}`, summary: (v) => `${v} ${L.units.vcpu}` },
+    { key: "ram", icon: MemoryStick, label: L.ram, min: 1, max: 128, ticks: [1, 32, 64, 96, 128], format: (v) => `${v} ${L.units.gb}`, summary: (v) => `${v} ${L.units.gb}` },
+    { key: "nvme", icon: HardDrive, label: L.disk, min: 10, max: 2000, ticks: [10, 500, 1000, 1500, 2000], format: (v) => `${v} ${L.units.gb}`, summary: (v) => `${v} ${L.units.nvme}` },
+    { key: "traffic", icon: Network, label: L.traffic, min: 0.5, max: 10, ticks: [0.5, 3, 5, 7, 10], format: (v) => `${v.toFixed(1)} ${L.units.tb}`, summary: (v) => `${v.toFixed(1)} ${L.units.tb}` },
+    { key: "ip", icon: Globe, label: L.ip, min: 1, max: 10, ticks: [1, 3, 5, 7, 10], format: (v) => `${v} ${L.units.ip}`, summary: (v) => `${v} ${L.units.ip}` },
+  ]
+
   return (
-    <section id="configurator" className="relative py-12 md:py-20">
+    <section id="configurator" className="relative py-24 md:py-32">
       <div className="container mx-auto px-4">
-        <div className="relative mx-auto max-w-7xl">
-          <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 opacity-10 blur-2xl" />
+        <SectionHeading
+          eyebrow={t.home.configuratorEyebrow}
+          title={t.configurator.title}
+          subtitle={t.home.configuratorSubtitle}
+          className="mb-14 md:mb-20"
+        />
 
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-blue-50 to-cyan-50 p-4 shadow-xl dark:border-slate-700 dark:from-slate-900 dark:via-blue-950 dark:to-slate-900 md:p-8">
-            <div className="grid gap-6 md:gap-8 lg:grid-cols-2">
-              {/* Left */}
-              <div className="space-y-6">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white md:text-2xl">
-                  {L.title}
-                </h2>
+        <Reveal className="relative mx-auto max-w-7xl">
+          <div aria-hidden className="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-r from-brand-cyan/15 via-brand/10 to-brand-violet/15 blur-3xl" />
 
-                {/* CPU */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                      <Cpu className="h-4 w-4 text-cyan-500 md:h-5 md:w-5" />
-                      <span className="text-sm font-medium md:text-base">{L.cpu}</span>
-                    </div>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={config.cpu}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
-                      >
-                        {config.cpu} {L.units.vcpu}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
+          <div className="grid gap-4 lg:grid-cols-[1.35fr_1fr] lg:gap-5">
+            {/* Controls */}
+            <div className="glass rounded-[2rem] p-5 md:p-9">
+              <h3 className="mb-8 text-lg font-semibold tracking-tight md:text-xl">{L.title}</h3>
 
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => decrement("cpu", 1)}
-                      disabled={config.cpu === 1}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-
-                    <div className="relative flex-1">
-                      <Slider value={[config.cpu]} onValueChange={([v]) => updateConfig("cpu", v)} min={1} max={32} step={1} />
-                      <div className="mt-2 flex justify-between px-0.5 text-xs text-slate-600 dark:text-slate-300">
-                        <span>1</span><span>8</span><span>16</span><span>24</span><span>32</span>
+              <div className="space-y-8">
+                {rows.map((row) => {
+                  const value = config[row.key]
+                  const Icon = row.icon
+                  return (
+                    <div key={row.key} className="group">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <label htmlFor={`cfg-${row.key}`} className="flex items-center gap-3 text-sm font-medium md:text-base">
+                          <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand/10 text-brand ring-1 ring-brand/20 transition-colors group-hover:bg-brand group-hover:text-white">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          {row.label}
+                        </label>
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span
+                            key={value}
+                            initial={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                            transition={{ duration: 0.25 }}
+                            className="font-display text-lg font-medium tabular-nums md:text-xl"
+                          >
+                            {row.format(value)}
+                          </motion.span>
+                        </AnimatePresence>
                       </div>
-                    </div>
 
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => increment("cpu", 32)}
-                      disabled={config.cpu === 32}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* RAM */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                      <MemoryStick className="h-4 w-4 text-cyan-500 md:h-5 md:w-5" />
-                      <span className="text-sm font-medium md:text-base">{L.ram}</span>
-                    </div>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={config.ram}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
-                      >
-                        {config.ram} {L.units.gb}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => decrement("ram", 1)}
-                      disabled={config.ram === 1}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-
-                    <div className="relative flex-1">
-                      <Slider value={[config.ram]} onValueChange={([v]) => updateConfig("ram", v)} min={1} max={128} step={1} />
-                      <div className="mt-2 flex justify-between px-0.5 text-xs text-slate-600 dark:text-slate-300">
-                        <span>1</span><span>32</span><span>64</span><span>96</span><span>128</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => increment("ram", 128)}
-                      disabled={config.ram === 128}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* NVMe */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                      <HardDrive className="h-4 w-4 text-cyan-500 md:h-5 md:w-5" />
-                      <span className="text-sm font-medium md:text-base">{L.disk}</span>
-                    </div>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={config.nvme}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
-                      >
-                        {config.nvme} {L.units.gb}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => decrement("nvme", 10)}
-                      disabled={config.nvme === 10}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-
-                    <div className="relative flex-1">
-                      <Slider value={[config.nvme]} onValueChange={([v]) => updateConfig("nvme", v)} min={10} max={2000} step={10} />
-                      <div className="mt-2 flex justify-between px-0.5 text-xs text-slate-600 dark:text-slate-300">
-                        <span>10</span><span>500</span><span>1000</span><span>1500</span><span>2000</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => increment("nvme", 2000)}
-                      disabled={config.nvme === 2000}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Traffic */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                      <Network className="h-4 w-4 text-cyan-500 md:h-5 md:w-5" />
-                      <span className="text-sm font-medium md:text-base">{L.traffic}</span>
-                    </div>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={config.traffic}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
-                      >
-                        {config.traffic.toFixed(1)} {L.units.tb}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => decrement("traffic", 0.5)}
-                      disabled={config.traffic === 0.5}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-
-                    <div className="relative flex-1">
-                      <Slider value={[config.traffic]} onValueChange={([v]) => updateConfig("traffic", v)} min={0.5} max={10} step={0.5} />
-                      <div className="mt-2 flex justify-between px-0.5 text-xs text-slate-600 dark:text-slate-300">
-                        <span>0.5</span><span>3</span><span>5</span><span>7</span><span>10</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => increment("traffic", 10)}
-                      disabled={config.traffic === 10}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* IP */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-                      <Network className="h-4 w-4 text-cyan-500 md:h-5 md:w-5" />
-                      <span className="text-sm font-medium md:text-base">{L.ip}</span>
-                    </div>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={config.ip}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
-                      >
-                        {config.ip} {L.units.ip}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-
-                  <div className="flex items-center gap-2 md:gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => decrement("ip", 1)}
-                      disabled={config.ip === 1}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Minus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-
-                    <div className="relative flex-1">
-                      <Slider value={[config.ip]} onValueChange={([v]) => updateConfig("ip", v)} min={1} max={10} step={1} />
-                      <div className="mt-2 flex justify-between px-0.5 text-xs text-slate-600 dark:text-slate-300">
-                        <span>1</span><span>3</span><span>5</span><span>7</span><span>10</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => increment("ip", 10)}
-                      disabled={config.ip === 10}
-                      className="h-8 w-8 shrink-0 border border-cyan-400/50 bg-white text-slate-900 hover:bg-cyan-50 dark:border-cyan-500/50 dark:bg-slate-800/50 dark:text-white dark:hover:bg-cyan-500/20 md:h-10 md:w-10"
-                    >
-                      <Plus className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right */}
-              <div className="flex flex-col justify-between rounded-xl bg-white/90 p-4 backdrop-blur-sm dark:bg-slate-800/50 md:p-6">
-                <div className="space-y-4 md:space-y-6">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white md:text-2xl">
-                    {L.yourConfig}
-                  </h3>
-
-                  <div className="space-y-3 md:space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700 md:pb-3">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.cpu.replace(":", "")}</span>
-                      <span className="text-lg font-bold text-slate-900 dark:text-white md:text-xl">
-                        {config.cpu} {L.units.vcpu}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700 md:pb-3">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.ram.replace(":", "")}</span>
-                      <span className="text-lg font-bold text-slate-900 dark:text-white md:text-xl">
-                        {config.ram} {L.units.gb}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700 md:pb-3">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.disk.replace(":", "")}</span>
-                      <span className="text-lg font-bold text-slate-900 dark:text-white md:text-xl">
-                        {config.nvme} {L.units.nvme}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700 md:pb-3">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.traffic.replace(":", "")}</span>
-                      <span className="text-lg font-bold text-slate-900 dark:text-white md:text-xl">
-                        {config.traffic.toFixed(1)} {L.units.tb}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2 dark:border-slate-700 md:pb-3">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.ip.replace(":", "")}</span>
-                      <span className="text-lg font-bold text-slate-900 dark:text-white md:text-xl">
-                        {config.ip} {L.units.ip}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 pt-2 md:pt-4">
-                    <h4 className="text-base font-semibold text-slate-900 dark:text-white md:text-lg">{L.pricing}</h4>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.monthly}</span>
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={monthlyPrice.toFixed(2)}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
+                      <div className="flex items-center gap-3 md:gap-4">
+                        <StepButton
+                          label={`${row.label.replace(":", "")} −`}
+                          onClick={() => decrement(row.key, row.min)}
+                          disabled={value <= row.min}
                         >
-                          {monthlyPrice.toFixed(2)} {L.units.tjs}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
+                          <Minus className="h-4 w-4" />
+                        </StepButton>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600 dark:text-slate-300 md:text-base">{L.daily}</span>
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={dailyPrice.toFixed(2)}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="text-lg font-bold text-slate-900 dark:text-white md:text-xl"
+                        <div className="relative flex-1">
+                          <Slider
+                            id={`cfg-${row.key}`}
+                            aria-label={row.label}
+                            value={[value]}
+                            onValueChange={([v]) => updateConfig(row.key, v)}
+                            min={row.min}
+                            max={row.max}
+                            step={stepFor(row.key)}
+                          />
+                          <div className="mt-2.5 flex justify-between px-0.5 text-[0.7rem] tabular-nums text-muted-foreground">
+                            {row.ticks.map((tick) => (
+                              <span key={tick}>{tick}</span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <StepButton
+                          label={`${row.label.replace(":", "")} +`}
+                          onClick={() => increment(row.key, row.max)}
+                          disabled={value >= row.max}
                         >
-                          {dailyPrice.toFixed(2)} {L.units.tjs}
-                        </motion.span>
-                      </AnimatePresence>
+                          <Plus className="h-4 w-4" />
+                        </StepButton>
+                      </div>
                     </div>
-
-                    <div className="flex items-center justify-between border-t border-slate-200 pt-2 dark:border-slate-700 md:pt-3">
-                      <span className="text-base font-semibold text-slate-900 dark:text-white md:text-lg">{L.total}</span>
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={monthlyPrice.toFixed(2)}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          className="text-2xl font-bold text-cyan-500 md:text-3xl"
-                        >
-                          {monthlyPrice.toFixed(2)} {L.units.tjs}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </div>
-
-                <Button
-                  size="lg"
-                  className="mt-4 w-full bg-gradient-to-r from-cyan-400 to-teal-400 text-base font-semibold text-slate-900 hover:from-cyan-500 hover:to-teal-500 dark:text-white md:mt-6 md:text-lg"
-                  onClick={() => {
-                    window.location.href = orderUrl
-                  }}
-                >
-                  {L.order}
-                </Button>
+                  )
+                })}
               </div>
             </div>
 
-            {/* unused but keeps lint happy since t used */}
-            <span className="hidden">{t.nav?.home}</span>
+            {/* Summary */}
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <div className="ring-gradient rounded-[2rem]">
+                <div className="glass flex flex-col rounded-[inherit] p-5 md:p-9">
+                  <h3 className="text-lg font-semibold tracking-tight md:text-xl">{L.yourConfig}</h3>
+
+                  <dl className="mt-6 divide-y divide-border/70">
+                    {rows.map((row) => (
+                      <div key={row.key} className="flex items-center justify-between py-3 text-sm md:text-[0.95rem]">
+                        <dt className="text-muted-foreground">{row.label.replace(":", "")}</dt>
+                        <dd className="font-semibold tabular-nums">{row.summary(config[row.key])}</dd>
+                      </div>
+                    ))}
+                  </dl>
+
+                  <div className="mt-6 rounded-2xl border border-border/70 bg-background/40 p-5">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{L.pricing}</div>
+                    <div className="mt-4 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{L.monthly}</span>
+                      <span className="font-semibold tabular-nums">
+                        <AnimatedPrice value={monthlyPrice} /> {L.units.tjs}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{L.daily}</span>
+                      <span className="font-semibold tabular-nums">
+                        <AnimatedPrice value={dailyPrice} /> {L.units.tjs}
+                      </span>
+                    </div>
+                    <div className="mt-5 border-t border-border/70 pt-5">
+                      <div className="text-sm font-medium">{L.total}</div>
+                      <div className="mt-1 flex items-baseline gap-2">
+                        <span className="text-brand-gradient font-display text-4xl font-medium tracking-tight tabular-nums md:text-5xl">
+                          <AnimatedPrice value={monthlyPrice} />
+                        </span>
+                        <span className="text-lg font-semibold text-muted-foreground">{L.units.tjs}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Magnetic className="mt-6 w-full" strength={0.15}>
+                    <Button
+                      size="lg"
+                      className="group h-14 w-full text-base"
+                      onClick={() => {
+                        window.location.href = orderUrl
+                      }}
+                    >
+                      {L.order}
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </Button>
+                  </Magnetic>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   )
+}
+
+function StepButton({ children, onClick, disabled, label }: { children: React.ReactNode; onClick: () => void; disabled: boolean; label: string }) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      aria-label={label}
+      onClick={onClick}
+      disabled={disabled}
+      className="h-9 w-9 shrink-0 hover:border-brand/60 hover:text-brand md:h-10 md:w-10"
+    >
+      {children}
+    </Button>
+  )
+}
+
+/** Smoothly tweens between price values instead of jumping. */
+function AnimatedPrice({ value }: { value: number }) {
+  const spring = useSpring(value, { stiffness: 120, damping: 22, mass: 0.6 })
+  const text = useTransform(spring, (v) => v.toFixed(2))
+  useEffect(() => {
+    spring.set(value)
+  }, [spring, value])
+  return <motion.span>{text}</motion.span>
 }

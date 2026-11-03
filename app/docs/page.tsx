@@ -1,7 +1,9 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Reveal } from "@/components/fx/reveal"
+import { SpotlightCard } from "@/components/fx/spotlight-card"
 import { useLanguage } from "@/hooks/use-language"
+import { ArrowUpRight } from "lucide-react"
 import Link from "next/link"
 
 export default function DocsIndexPage() {
@@ -88,7 +90,7 @@ export default function DocsIndexPage() {
   return (
     <div className="space-y-8">
       <div className="max-w-3xl">
-        <h2 className="text-3xl font-bold">
+        <h2 className="text-3xl font-medium">
           {tr("Документация", "Documentation", "Ҳуҷҷатгузорӣ")}
         </h2>
         <p className="text-muted-foreground mt-3">
@@ -100,18 +102,20 @@ export default function DocsIndexPage() {
         </p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        {sections.map((section) => (
-          <Link key={section.href} href={section.href}>
-            <Card className="h-full rounded-2xl border-2 transition-all hover:shadow-lg">
-              <CardHeader>
-                <CardTitle>{section.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">{section.desc}</p>
-              </CardContent>
-            </Card>
-          </Link>
+      <div className="grid gap-4 md:grid-cols-2">
+        {sections.map((section, index) => (
+          <Reveal key={section.href} delay={(index % 2) * 0.08} className="h-full">
+            <Link href={section.href} className="group block h-full rounded-3xl">
+              <SpotlightCard className="flex h-full flex-col p-6">
+                <div className="flex items-start justify-between gap-4">
+                  <span className="font-mono text-xs text-muted-foreground/70">{String(index + 1).padStart(2, "0")}</span>
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold tracking-tight">{section.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{section.desc}</p>
+              </SpotlightCard>
+            </Link>
+          </Reveal>
         ))}
       </div>
     </div>

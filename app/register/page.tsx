@@ -27,7 +27,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
+      <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/20 blur-[120px]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -41,9 +42,9 @@ export default function RegisterPage() {
           </Button>
         </Link>
 
-        <Card className="border-2">
+        <Card className="relative rounded-[2rem] px-2 py-8">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">{t.nav.register}</CardTitle>
+            <CardTitle className="font-display text-2xl font-medium">{t.nav.register}</CardTitle>
             <CardDescription>
               {t.nav.about === "О компании"
                 ? "Создайте аккаунт для доступа к облачным сервисам"
@@ -151,7 +152,7 @@ export default function RegisterPage() {
                 : t.nav.about === "About"
                   ? "Already have an account?"
                   : "Аллакай ҳисоб доред?"}{" "}
-              <Link href="/login" className="font-medium text-blue-500 hover:underline">
+              <Link href="/login" className="font-medium text-brand hover:underline">
                 {t.nav.login}
               </Link>
             </div>

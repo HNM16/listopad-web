@@ -2,16 +2,17 @@
 
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { CTASection } from "@/components/cta-section"
+import { FeatureGrid } from "@/components/feature-grid"
+import { PageHero } from "@/components/page-hero"
+import { SectionHeading } from "@/components/section-heading"
+import { CountUp } from "@/components/fx/count-up"
+import { Stagger, StaggerItem } from "@/components/fx/reveal"
 import { useLanguage } from "@/hooks/use-language"
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
-import { Shield, Zap, Users, Award, Globe2, Server } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Shield, Zap, Users, Award, Globe2, Server, Building2 } from "lucide-react"
 
 export default function AboutPage() {
   const { t } = useLanguage()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   const stats = [
     {
@@ -104,87 +105,55 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="pt-16">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto max-w-3xl text-center"
-            >
-              <h1 className="text-balance text-5xl font-bold">
-                {t.nav.about === "О компании" ? "О компании" : t.nav.about === "About" ? "About Us" : "Дар бораи мо"}
-              </h1>
-              <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">
-                {t.nav.about === "О компании"
-                  ? "Listopad Cloud — ведущий поставщик облачных решений, предоставляющий надёжную и масштабируемую инфраструктуру для бизнеса любого размера. Мы стремимся обеспечить лучший сервис и производительность для наших клиентов."
-                  : t.nav.about === "About"
-                    ? "Listopad Cloud is a leading cloud solutions provider, offering reliable and scalable infrastructure for businesses of any size. We strive to provide the best service and performance for our clients."
-                    : "Listopad Cloud пешбари пешниҳоддиҳандаи ҳалҳои абрӣ мебошад, ки инфрасохтори боэътимод ва васеъшавандаро барои тиҷорати ҳар андоза пешниҳод мекунад. Мо кӯшиш мекунем, ки беҳтарин хидмат ва самаранокиро барои муштариёни худ таъмин намоем."}
-              </p>
-            </motion.div>
+      <main>
+        <PageHero
+          icon={Building2}
+          eyebrow="Listopad Cloud"
+          title={t.nav.about === "О компании" ? "О компании" : t.nav.about === "About" ? "About Us" : "Дар бораи мо"}
+          description={
+            t.nav.about === "О компании"
+              ? "Listopad Cloud — ведущий поставщик облачных решений, предоставляющий надёжную и масштабируемую инфраструктуру для бизнеса любого размера. Мы стремимся обеспечить лучший сервис и производительность для наших клиентов."
+              : t.nav.about === "About"
+                ? "Listopad Cloud is a leading cloud solutions provider, offering reliable and scalable infrastructure for businesses of any size. We strive to provide the best service and performance for our clients."
+                : "Listopad Cloud пешбари пешниҳоддиҳандаи ҳалҳои абрӣ мебошад, ки инфрасохтори боэътимод ва васеъшавандаро барои тиҷорати ҳар андоза пешниҳод мекунад. Мо кӯшиш мекунем, ки беҳтарин хидмат ва самаранокиро барои муштариёни худ таъмин намоем."
+          }
+        />
 
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="mt-16 grid grid-cols-2 gap-6 md:grid-cols-4"
-            >
+        {/* Stats */}
+        <section className="relative pb-8">
+          <div className="container mx-auto px-4">
+            <Stagger className="glass grid grid-cols-2 overflow-hidden rounded-[2rem] md:grid-cols-4">
               {stats.map((stat, index) => (
-                <Card key={index} className="border-2">
-                  <CardContent className="p-6 text-center">
-                    <div className="text-3xl font-bold text-blue-500">{stat.value}</div>
-                    <div className="mt-2 text-sm text-muted-foreground">{stat.label}</div>
-                  </CardContent>
-                </Card>
+                <StaggerItem
+                  key={index}
+                  className={`relative p-6 text-center md:p-10 ${index % 2 === 1 ? "border-l" : ""} ${index > 1 ? "border-t md:border-t-0" : ""} ${index === 2 ? "md:border-l" : ""} border-border/60`}
+                >
+                  <CountUp value={stat.value} className="text-brand-gradient block font-display text-3xl font-medium tracking-tight md:text-5xl" />
+                  <div className="mt-3 text-sm text-muted-foreground">{stat.label}</div>
+                </StaggerItem>
               ))}
-            </motion.div>
+            </Stagger>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-20" ref={ref}>
+        {/* Features */}
+        <section className="relative py-20 md:py-28">
           <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-balance text-4xl font-bold">
-                {t.nav.about === "О компании"
+            <SectionHeading
+              title={
+                t.nav.about === "О компании"
                   ? "Почему выбирают нас"
                   : t.nav.about === "About"
                     ? "Why Choose Us"
-                    : "Чаро моро интихоб мекунанд"}
-              </h2>
-            </motion.div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Card className="h-full border-2 transition-all hover:border-blue-500 hover:shadow-lg">
-                    <CardContent className="p-6">
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-                        <feature.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="mb-2 text-xl font-bold">{feature.title}</h3>
-                      <p className="text-pretty leading-relaxed text-muted-foreground">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                    : "Чаро моро интихоб мекунанд"
+              }
+              className="mb-12 md:mb-16"
+            />
+            <FeatureGrid features={features} />
           </div>
         </section>
+
+        <CTASection />
       </main>
       <Footer />
     </div>

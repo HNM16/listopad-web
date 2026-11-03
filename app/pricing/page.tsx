@@ -3,11 +3,13 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import ServerConfigurator from "@/components/server-configurator"
-import { motion } from "framer-motion"
-import { Check } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PageHero } from "@/components/page-hero"
+import { Reveal } from "@/components/fx/reveal"
+import { SpotlightCard } from "@/components/fx/spotlight-card"
+import { ArrowRight, Check, Sparkles, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/hooks/use-language"
+import { cn } from "@/lib/utils"
 
 type Lang = "ru" | "en" | "tj"
 
@@ -77,79 +79,66 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="pt-16">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto max-w-3xl text-center"
-            >
-              <h1 className="text-balance text-5xl font-bold">{pageTitle}</h1>
-              <p className="mt-6 text-pretty text-lg leading-relaxed text-muted-foreground">{heroText}</p>
-            </motion.div>
-          </div>
-        </section>
+      <main>
+        <PageHero icon={Wallet} title={pageTitle} description={heroText} />
 
         {/* Pricing Plans */}
-        <section className="py-20">
+        <section className="relative pb-10">
           <div className="container mx-auto px-4">
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className="grid items-stretch gap-5 md:grid-cols-3">
               {plans.map((plan, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="flex"
-                >
-                  <Card
-                    className={`relative flex flex-1 flex-col border-2 ${
-                      plan.popular ? "border-blue-500 shadow-lg" : ""
-                    }`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-4 py-1 text-sm font-medium text-white">
-                        {popularBadge}
+                <Reveal key={index} delay={index * 0.1} className={cn("flex", plan.popular && "md:-my-4")}>
+                  <div className={cn("flex flex-1 rounded-[2rem]", plan.popular && "ring-gradient")}>
+                    <SpotlightCard
+                      tilt
+                      className={cn(
+                        "relative flex flex-1 flex-col rounded-[inherit] p-7 md:p-9",
+                        plan.popular && "bg-[linear-gradient(180deg,color-mix(in_oklab,var(--brand)_12%,transparent),transparent_55%)]",
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="text-xl font-semibold tracking-tight">{plan.name}</h3>
+                        {plan.popular && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-cyan via-brand to-brand-violet px-3 py-1 text-xs font-semibold text-white shadow-[0_8px_24px_-8px_var(--brand)]">
+                            <Sparkles className="h-3 w-3" />
+                            {popularBadge}
+                          </span>
+                        )}
                       </div>
-                    )}
+                      <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
 
-                    <CardHeader>
-                      <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                      <CardDescription>{plan.description}</CardDescription>
-
-                      <div className="mt-4">
-                        <span className="text-4xl font-bold">{plan.price}</span>
+                      <div className="mt-8 flex items-baseline gap-1.5">
+                        <span className="font-display text-3xl font-medium tracking-tight md:text-[2.1rem]">{plan.price}</span>
                         <span className="text-muted-foreground">{perMonth}</span>
                       </div>
-                    </CardHeader>
 
-                    <CardContent className="flex flex-1 flex-col">
-                      <ul className="flex-1 space-y-3">
+                      <div className="my-8 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                      <ul className="flex-1 space-y-3.5">
                         {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10">
-                              <Check className="h-3 w-3 text-blue-500" />
-                            </div>
+                          <li key={i} className="flex items-center gap-3">
+                            <span className={cn("grid h-6 w-6 shrink-0 place-items-center rounded-full", plan.popular ? "bg-brand text-white" : "bg-brand/10 text-brand")}>
+                              <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+                            </span>
                             <span className="text-sm">{feature}</span>
                           </li>
                         ))}
                       </ul>
 
                       <Button
-                        className="mt-6 w-full"
+                        size="lg"
+                        className="group mt-10 w-full"
                         variant={plan.popular ? "default" : "outline"}
                         onClick={() => {
                           window.location.href = orderUrl
                         }}
                       >
                         {orderLabel}
+                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                    </SpotlightCard>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>

@@ -1,18 +1,11 @@
 "use client"
 
-import { Footer } from "@/components/footer"
-import { Header } from "@/components/header"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { ProductPage } from "@/components/product-page"
 import { useLanguage } from "@/hooks/use-language"
-import { motion, useInView } from "framer-motion"
 import { BarChart3, CheckCircle2, Clock, Globe2, Shield, Zap } from "lucide-react"
-import { useRef } from "react"
 
 export default function CDNClient() {
   const { t } = useLanguage()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   const features = [
     {
@@ -123,108 +116,32 @@ export default function CDNClient() {
   ]
 
   return (
-    <div className="min-h-screen">
-      <Header />
-      <main className="pt-16">
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto max-w-3xl text-center"
-            >
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500">
-                <Globe2 className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-balance text-5xl font-bold">CDN</h1>
-              <p className="text-muted-foreground mt-6 text-pretty text-lg leading-relaxed">
-                {t.nav.about === "О компании"
-                  ? "Сеть доставки контента (CDN) для ускорения загрузки вашего сайта и улучшения пользовательского опыта. Доставляйте контент быстрее с нашей глобальной сетью серверов."
-                  : t.nav.about === "About"
-                    ? "Content Delivery Network (CDN) to speed up your website loading and improve user experience. Deliver content faster with our global server network."
-                    : "Шабакаи расонидани мундариҷа (CDN) барои тезонидани боркунии сомонаи шумо ва беҳтар кардани таҷрибаи корбар. Мундариҷаро тезтар бо шабакаи ҷаҳонии серверҳои мо расонед."}
-              </p>
-
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Button asChild size="lg">
-                  <a href="https://my.listopad.tj/auth/login">{t.configurator.order}</a>
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        <section className="py-20" ref={ref}>
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-balance text-4xl font-bold">
-                {t.nav.about === "О компании"
-                  ? "Возможности CDN"
-                  : t.nav.about === "About"
-                    ? "CDN Features"
-                    : "Имкониятҳои CDN"}
-              </h2>
-            </motion.div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Card className="h-full border-2 transition-all hover:border-blue-500 hover:shadow-lg">
-                    <CardContent className="p-6">
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-                        <feature.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="mb-2 text-xl font-bold">{feature.title}</h3>
-                      <p className="text-muted-foreground text-pretty leading-relaxed">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-muted/50 py-20">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-8 text-center text-3xl font-bold">
-                {t.nav.about === "О компании"
-                  ? "Преимущества использования CDN"
-                  : t.nav.about === "About"
-                    ? "Benefits of Using CDN"
-                    : "Бартариҳои истифодаи CDN"}
-              </h2>
-              <div className="grid gap-4 md:grid-cols-2">
-                {benefits.map((benefit, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="bg-background flex items-center gap-3 rounded-lg p-4"
-                  >
-                    <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-blue-500" />
-                    <span>{benefit}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+    <ProductPage
+      icon={Globe2}
+      title="CDN"
+      description={
+        t.nav.about === "О компании"
+          ? "Сеть доставки контента (CDN) для ускорения загрузки вашего сайта и улучшения пользовательского опыта. Доставляйте контент быстрее с нашей глобальной сетью серверов."
+          : t.nav.about === "About"
+            ? "Content Delivery Network (CDN) to speed up your website loading and improve user experience. Deliver content faster with our global server network."
+            : "Шабакаи расонидани мундариҷа (CDN) барои тезонидани боркунии сомонаи шумо ва беҳтар кардани таҷрибаи корбар. Мундариҷаро тезтар бо шабакаи ҷаҳонии серверҳои мо расонед."
+      }
+      featuresTitle={
+        t.nav.about === "О компании"
+          ? "Возможности CDN"
+          : t.nav.about === "About"
+            ? "CDN Features"
+            : "Имкониятҳои CDN"
+      }
+      features={features}
+      benefitsTitle={
+        t.nav.about === "О компании"
+          ? "Преимущества использования CDN"
+          : t.nav.about === "About"
+            ? "Benefits of Using CDN"
+            : "Бартариҳои истифодаи CDN"
+      }
+      benefits={benefits}
+    />
   )
 }
