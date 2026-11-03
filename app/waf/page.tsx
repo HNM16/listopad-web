@@ -1,21 +1,11 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { ProductPage } from "@/components/product-page"
 import { useLanguage } from "@/hooks/use-language"
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
 import { Shield, Lock, Eye, AlertTriangle, Activity, CheckCircle2 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-
-import Link from "next/link"
-
 
 export default function WAFPage() {
   const { t } = useLanguage()
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
 
   const features = [
     {
@@ -134,111 +124,32 @@ export default function WAFPage() {
   ]
 
   return (
-    <div className="min-h-screen">
-      <Header />
-      <main className="pt-16">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto max-w-3xl text-center"
-            >
-              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500">
-                <Shield className="h-8 w-8 text-white" />
-              </div>
-              <h1 className="text-balance text-5xl font-bold">WAF</h1>
-              <p className="text-muted-foreground mt-6 text-pretty text-lg leading-relaxed">
-                {t.nav.about === "О компании"
-                  ? "Web Application Firewall (WAF) для защиты ваших веб-приложений от современных угроз. Обеспечьте безопасность вашего бизнеса с нашим продвинутым WAF."
-                  : t.nav.about === "About"
-                    ? "Web Application Firewall (WAF) to protect your web applications from modern threats. Ensure your business security with our advanced WAF."
-                    : "Web Application Firewall (WAF) барои ҳифзи барномаҳои веби шумо аз таҳдидҳои муосир. Бехатарии тиҷорати худро бо WAF-и пешрафтаи мо таъмин намоед."}
-              </p>
-         <div className="mt-8 flex flex-wrap justify-center gap-4">
- <a href="https://my.listopad.tj/auth/login">
-  <Button size="lg">{t.configurator.order}</Button>
-</a>
-</div>
-
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section className="py-20" ref={ref}>
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.5 }}
-              className="mb-12 text-center"
-            >
-              <h2 className="text-balance text-4xl font-bold">
-                {t.nav.about === "О компании"
-                  ? "Возможности WAF"
-                  : t.nav.about === "About"
-                    ? "WAF Features"
-                    : "Имкониятҳои WAF"}
-              </h2>
-            </motion.div>
-
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Card className="h-full border-2 transition-all hover:border-blue-500 hover:shadow-lg">
-                    <CardContent className="p-6">
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-                        <feature.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="mb-2 text-xl font-bold">{feature.title}</h3>
-                      <p className="text-muted-foreground text-pretty leading-relaxed">{feature.description}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Benefits Section */}
-        <section className="bg-muted/50 py-20">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto max-w-3xl">
-              <h2 className="mb-8 text-center text-3xl font-bold">
-                {t.nav.about === "О компании"
-                  ? "Преимущества использования WAF"
-                  : t.nav.about === "About"
-                    ? "Benefits of Using WAF"
-                    : "Бартариҳои истифодаи WAF"}
-              </h2>
-              <div className="grid gap-4 md:grid-cols-2">
-                {benefits.map((benefit, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="bg-background flex items-center gap-3 rounded-lg p-4"
-                  >
-                    <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-blue-500" />
-                    <span>{benefit}</span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
+    <ProductPage
+      icon={Shield}
+      title="WAF"
+      description={
+        t.nav.about === "О компании"
+          ? "Web Application Firewall (WAF) для защиты ваших веб-приложений от современных угроз. Обеспечьте безопасность вашего бизнеса с нашим продвинутым WAF."
+          : t.nav.about === "About"
+            ? "Web Application Firewall (WAF) to protect your web applications from modern threats. Ensure your business security with our advanced WAF."
+            : "Web Application Firewall (WAF) барои ҳифзи барномаҳои веби шумо аз таҳдидҳои муосир. Бехатарии тиҷорати худро бо WAF-и пешрафтаи мо таъмин намоед."
+      }
+      featuresTitle={
+        t.nav.about === "О компании"
+          ? "Возможности WAF"
+          : t.nav.about === "About"
+            ? "WAF Features"
+            : "Имкониятҳои WAF"
+      }
+      features={features}
+      benefitsTitle={
+        t.nav.about === "О компании"
+          ? "Преимущества использования WAF"
+          : t.nav.about === "About"
+            ? "Benefits of Using WAF"
+            : "Бартариҳои истифодаи WAF"
+      }
+      benefits={benefits}
+    />
   )
 }

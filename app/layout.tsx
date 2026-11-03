@@ -1,13 +1,27 @@
 import type { Metadata } from "next"
 import { cookies } from "next/headers"
 import Script from "next/script"
-import { Plus_Jakarta_Sans } from "next/font/google"
+import { Onest, Unbounded } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
+import { MotionProvider } from "@/components/fx/motion-provider"
+import { AmbientBackground } from "@/components/fx/ambient-background"
+import { CursorGlow } from "@/components/fx/cursor-glow"
+import { ScrollProgress } from "@/components/fx/scroll-progress"
+import { LanguageHydrator } from "@/components/language-hydrator"
 import "./globals.css"
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
+// Both families ship the cyrillic-ext subset, required for Tajik letters (ҳ, ҷ, ӣ, ӯ, қ, ғ).
+const bodyFont = Onest({
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  variable: "--font-body",
+  display: "swap",
+})
+
+const headingFont = Unbounded({
+  subsets: ["latin", "cyrillic", "cyrillic-ext"],
+  weight: ["400", "500", "600"],
+  variable: "--font-heading",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -38,7 +52,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={initialTheme === "dark" ? "dark" : ""}
     >
-      <body className={`${plusJakartaSans.variable} font-sans antialiased`}>
+      <body className={`${bodyFont.variable} ${headingFont.variable} font-sans antialiased`}>
         {/* Yandex.Metrika counter */}
         <Script
           id="yandex-metrika"
@@ -80,7 +94,13 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <LanguageHydrator />
+          <MotionProvider>
+            <AmbientBackground />
+            <ScrollProgress />
+            <CursorGlow />
+            {children}
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

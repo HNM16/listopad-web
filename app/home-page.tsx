@@ -8,11 +8,10 @@ import { AdvantagesSection } from "@/components/advantages-section"
 import ServerConfigurator from "@/components/server-configurator"
 import { CTASection } from "@/components/cta-section"
 import { Footer } from "@/components/footer"
-import { useThemeEffect } from "@/hooks/use-theme"
 
 export default function HomePage() {
-  useThemeEffect()
-
+  // Theme is owned by next-themes (ThemeProvider in the root layout); the old
+  // zustand theme effect raced it and could override the visitor's choice.
   return (
     <div className="min-h-screen">
       <Header />

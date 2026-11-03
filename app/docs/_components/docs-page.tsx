@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/hooks/use-language"
 import Image from "next/image"
+import { Reveal } from "@/components/fx/reveal"
 
 type Screenshot = {
   src: string
@@ -58,13 +59,19 @@ export function DocsPageRenderer({ title, description, blocks }: DocsPageProps) 
   return (
     <article className="max-w-4xl space-y-10">
       <header className="space-y-3">
-        <h2 className="text-3xl font-bold">{title[lang]}</h2>
-        <p className="text-muted-foreground">{description[lang]}</p>
+        <h2 className="text-3xl font-medium md:text-4xl">{title[lang]}</h2>
+        <p className="text-lg text-muted-foreground">{description[lang]}</p>
       </header>
 
       {blocks.map((block, index) => (
-        <section key={index} className="bg-card space-y-5 rounded-2xl border p-6 shadow-sm">
-          <h3 className="text-2xl font-semibold">{block.title[lang]}</h3>
+        <Reveal key={index} y={20} amount={0.1}>
+        <section className="glass space-y-5 rounded-3xl p-6 md:p-8">
+          <h3 className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand/10 font-mono text-sm text-brand ring-1 ring-brand/20">
+              {index + 1}
+            </span>
+            {block.title[lang]}
+          </h3>
 
           <div className="space-y-4">
             {block.text.map((paragraph, pIndex) => (
@@ -75,7 +82,7 @@ export function DocsPageRenderer({ title, description, blocks }: DocsPageProps) 
           </div>
 
           {block.steps && block.steps.length > 0 && (
-            <ol className="text-muted-foreground list-decimal space-y-2 pl-5">
+            <ol className="text-muted-foreground list-decimal space-y-2 pl-5 marker:font-semibold marker:text-brand">
               {block.steps.map((step, sIndex) => (
                 <li key={sIndex}>{step[lang]}</li>
               ))}
@@ -87,14 +94,14 @@ export function DocsPageRenderer({ title, description, blocks }: DocsPageProps) 
               {block.screenshots.map((shot, shotIndex) => (
                 <figure
                   key={shotIndex}
-                  className="bg-background overflow-hidden rounded-2xl border p-3 shadow-sm"
+                  className="group overflow-hidden rounded-2xl border border-border/70 bg-background/50 p-3"
                 >
                   <div className="bg-muted relative aspect-[16/9] w-full overflow-hidden rounded-xl border">
                     <Image
                       src={shot.src}
                       alt={shot.alt[lang]}
                       fill
-                      className="object-contain"
+                      className="object-contain transition-transform duration-700 group-hover:scale-[1.02]"
                     />
                   </div>
                   <figcaption className="text-muted-foreground mt-3 text-sm">
@@ -105,6 +112,7 @@ export function DocsPageRenderer({ title, description, blocks }: DocsPageProps) 
             </div>
           )}
         </section>
+        </Reveal>
       ))}
     </article>
   )

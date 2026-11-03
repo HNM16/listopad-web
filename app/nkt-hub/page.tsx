@@ -15,7 +15,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/hooks/use-language"
 import { useEffect } from "react"
 
-import { Activity, Building2, Cpu, Database, Globe, Mail, MapPin, Network, Phone, Shield } from "lucide-react"
+import { CountUp } from "@/components/fx/count-up"
+import { Magnetic } from "@/components/fx/magnetic"
+import { NetworkMesh } from "@/components/fx/network-mesh"
+import { TextReveal } from "@/components/fx/text-reveal"
+import { FormStatus, type FormStatusState } from "@/components/form-status"
+import { Activity, ArrowRight, Building2, Cpu, Database, Globe, Loader2, Mail, MapPin, Network, Phone, Shield } from "lucide-react"
 import Image from "next/image"
 
 type Participant = { asn: string; city: string }
@@ -189,6 +194,7 @@ const products = useMemo(
 
   const [form, setForm] = useState({ name: "", company: "", phone: "", email: "", message: "" })
   const [sending, setSending] = useState(false)
+  const [status, setStatus] = useState<FormStatusState>(null)
 
 useEffect(() => {
   if (typeof window === "undefined") return
@@ -248,6 +254,7 @@ const onSubmit = async (e: React.FormEvent) => {
 
   try {
     setSending(true)
+    setStatus(null)
 
     const res = await fetch("/api/contact", {
       method: "POST",
@@ -269,13 +276,14 @@ const onSubmit = async (e: React.FormEvent) => {
       throw new Error(data?.error || "Failed")
     }
 
-    alert(
-      tr(
+    setStatus({
+      type: "success",
+      message: tr(
         "Спасибо! Мы свяжемся с вами.",
         "Thanks! We’ll contact you.",
         "Ташаккур! Мо бо шумо дар тамос мешавем."
-      )
-    )
+      ),
+    })
 
     setForm({
       name: "",
@@ -287,13 +295,14 @@ const onSubmit = async (e: React.FormEvent) => {
   } catch (error) {
     console.error("Contact form error:", error)
 
-    alert(
-      tr(
+    setStatus({
+      type: "error",
+      message: tr(
         "Ошибка отправки. Попробуйте позже.",
         "Sending failed. Please try again later.",
         "Ирсол нашуд. Баъдтар дубора кӯшиш кунед."
-      )
-    )
+      ),
+    })
   } finally {
     setSending(false)
   }
@@ -311,68 +320,102 @@ const onSubmit = async (e: React.FormEvent) => {
 
       <main className="pt-16">
         {/* HERO */}
-<section
- className="
-  relative overflow-hidden py-28 md:py-36 lg:py-44
-  bg-[radial-gradient(circle_at_50%_20%,#ffffff_0%,#eef5ff_45%,#cfe4ff_100%)]
-  dark:bg-[radial-gradient(circle_at_50%_20%,#0f172a_0%,#0b2447_45%,#020617_100%)]
-"
->
-  <div className="container mx-auto px-4">
-    <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mx-auto max-w-5xl text-center"
-    >
-      <h1 className="text-balance text-5xl font-bold leading-[0.95] tracking-tight md:text-6xl lg:text-7xl">
-        {tr(
-          "Современный Internet Exchange",
-          "Modern Internet Exchange",
-          "Internet Exchange-и муосир",
-        )}
-      </h1>
+        <section className="relative isolate overflow-hidden pb-20 pt-36 md:pb-28 md:pt-44">
+          <NetworkMesh className="mask-radial absolute inset-0 -z-10 h-full w-full opacity-90" />
+          <div aria-hidden className="mask-fade-b absolute inset-0 -z-10">
+            <div className="absolute left-1/2 top-24 h-[30rem] w-[44rem] -translate-x-1/2 rounded-full bg-brand/20 blur-[120px]" />
+          </div>
 
-      <p className="mt-6 text-pretty text-xl text-foreground/80 md:text-2xl">
-        {tr(
-          "Цифровой фундамент Центральной Азии",
-          "Digital backbone of Central Asia",
-          "Пояи рақамии Осиёи Марказӣ",
-        )}
-      </p>
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-5xl text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="eyebrow mb-6"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-brand" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+                </span>
+                NKT-HUB · Internet Exchange
+              </motion.div>
 
-      <p className="mt-2 text-base text-foreground/70 md:text-xl">
-        {tr(
-          "Сделано с любовью в Душанбе",
-          "Made with love in Dushanbe",
-          "Бо меҳр дар Душанбе сохта шудааст",
-        )}
-      </p>
+              <TextReveal
+                as="h1"
+                immediate
+                delay={0.1}
+                text={tr("Современный Internet Exchange", "Modern Internet Exchange", "Internet Exchange-и муосир")}
+                highlight={["Exchange"]}
+                className="text-5xl font-medium leading-[1] md:text-6xl lg:text-7xl"
+              />
 
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Button
-          size="lg"
-          className="min-w-[220px] rounded-full px-8"
-          onClick={() => document.getElementById("consult")?.scrollIntoView({ behavior: "smooth" })}
-        >
-          {tr("Запросить консультацию", "Request consultation", "Машварат дархост кардан")}
-        </Button>
-      </div>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.5 }}
+                className="mt-6 text-pretty text-xl text-foreground/80 md:text-2xl"
+              >
+                {tr("Цифровой фундамент Центральной Азии", "Digital backbone of Central Asia", "Пояи рақамии Осиёи Марказӣ")}
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.6 }}
+                className="mt-2 text-base text-muted-foreground md:text-lg"
+              >
+                {tr("Сделано с любовью в Душанбе", "Made with love in Dushanbe", "Бо меҳр дар Душанбе сохта шудааст")}
+              </motion.p>
 
-      <div className="pointer-events-none mt-14 select-none text-center">
-        <span className="text-4xl font-semibold tracking-wide text-[#b9d8ff] md:text-5xl lg:text-6xl">
-          AS205507
-        </span>
-      </div>
-    </motion.div>
-  </div>
-</section>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.7 }}
+                className="mt-10 flex flex-wrap justify-center gap-3"
+              >
+                <Magnetic>
+                  <Button
+                    size="lg"
+                    className="group min-w-[240px]"
+                    onClick={() => document.getElementById("consult")?.scrollIntoView({ behavior: "smooth" })}
+                  >
+                    {tr("Запросить консультацию", "Request consultation", "Машварат дархост кардан")}
+                    <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </Button>
+                </Magnetic>
+              </motion.div>
+
+              <motion.dl
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.85 }}
+                className="glass mx-auto mt-14 grid max-w-3xl grid-cols-1 overflow-hidden rounded-3xl sm:grid-cols-3"
+              >
+                {stats.map((s, i) => (
+                  <div key={s.label} className={`p-6 ${i > 0 ? "border-t border-border/60 sm:border-l sm:border-t-0" : ""}`}>
+                    <dt className="sr-only">{s.label}</dt>
+                    <dd>
+                      <CountUp value={s.value} className="text-brand-gradient block font-display text-3xl font-medium tracking-tight md:text-4xl" />
+                      <span className="mt-2 block text-sm text-muted-foreground">{s.label}</span>
+                    </dd>
+                  </div>
+                ))}
+              </motion.dl>
+
+              <div className="pointer-events-none mt-14 select-none text-center" aria-hidden>
+                <span className="bg-gradient-to-b from-brand/50 to-brand/0 bg-clip-text font-display text-5xl font-semibold tracking-[0.04em] text-transparent md:text-7xl lg:text-8xl">
+                  AS205507
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* PRODUCTS */}
-        <section className="py-20" id="products">
+        <section className="relative py-20 md:py-28" id="products">
           <div className="container mx-auto px-4">
             <div className="mx-auto mb-10 max-w-3xl text-center">
-              <h2 className="text-balance text-3xl font-bold md:text-4xl">
+              <h2 className="text-balance text-3xl font-medium md:text-[2.75rem] md:leading-tight">
                 {tr("Наши продукты", "Our products", "Маҳсулоти мо")}
               </h2>
               <p className="text-muted-foreground mt-3">
@@ -393,15 +436,15 @@ const onSubmit = async (e: React.FormEvent) => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: i * 0.07 }}
                 >
-             <Card className="h-full border-2 transition-all hover:shadow-lg">
+             <Card className="group h-full transition-all duration-500 hover:-translate-y-1 hover:border-brand/30 hover:shadow-[0_30px_80px_-30px_color-mix(in_oklab,var(--brand)_45%,transparent)]">
   <CardHeader>
-    <div className="mb-4 overflow-hidden rounded-xl border bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-800 dark:to-blue-900">
+    <div className="mb-4 overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-brand/10 via-transparent to-brand-violet/10">
       <div className="relative aspect-[16/5] w-full">
         <Image
           src={p.imageSrc}
           alt={p.imageAlt}
           fill
-          className="object-contain"
+          className="object-contain transition-transform duration-700 group-hover:scale-105"
           priority={false}
         />
       </div>
@@ -418,10 +461,10 @@ const onSubmit = async (e: React.FormEvent) => {
         </section>
 
         {/* PARTICIPANTS */}
-        <section className="bg-muted/50 py-20" id="participants">
+        <section className="relative py-20 md:py-28" id="participants">
           <div className="container mx-auto px-4">
             <div className="mx-auto mb-10 max-w-3xl text-center">
-              <h2 className="text-balance text-3xl font-bold md:text-4xl">
+              <h2 className="text-balance text-3xl font-medium md:text-[2.75rem] md:leading-tight">
                 {tr("Наши участники", "Our participants", "Иштирокчиёни мо")}
               </h2>
               <p className="text-muted-foreground mt-3">
@@ -430,7 +473,7 @@ const onSubmit = async (e: React.FormEvent) => {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <Card className="border-2">
+              <Card className="">
                 <CardHeader>
                   <CardTitle>{tr("ASN", "ASN", "ASN")}</CardTitle>
                   <CardDescription>{tr("Подключенные участники", "Connected participants", "Иштирокчиёни пайвастшуда")}</CardDescription>
@@ -438,7 +481,7 @@ const onSubmit = async (e: React.FormEvent) => {
                 <CardContent className="p-0">
                   <div className="max-h-[360px] overflow-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-background sticky top-0">
+                      <thead className="sticky top-0 bg-card/95 backdrop-blur">
                         <tr className="border-b">
                           <th className="px-4 py-3 text-left font-semibold">{tr("ASN", "ASN", "ASN")}</th>
                           <th className="px-4 py-3 text-left font-semibold">{tr("Город", "City", "Шаҳр")}</th>
@@ -446,8 +489,8 @@ const onSubmit = async (e: React.FormEvent) => {
                       </thead>
                       <tbody>
                         {participants.map((row) => (
-                          <tr key={row.asn} className="border-b last:border-b-0">
-                            <td className="px-4 py-3">{row.asn}</td>
+                          <tr key={row.asn} className="border-b border-border/60 transition-colors last:border-b-0 hover:bg-accent/50">
+                            <td className="px-4 py-3 font-mono text-[0.85rem]">{row.asn}</td>
                             <td className="text-muted-foreground px-4 py-3">
                               {row.city === "Dushanbe" ? tr("Душанбе", "Dushanbe", "Душанбе") : row.city === "Tashkent" ? tr("Ташкент", "Tashkent", "Тошканд") : row.city}
                             </td>
@@ -459,7 +502,7 @@ const onSubmit = async (e: React.FormEvent) => {
                 </CardContent>
               </Card>
 
-              <Card className="border-2">
+              <Card className="">
                 <CardHeader>
                   <CardTitle>{tr("Список подключенных провайдеров", "List of connected providers", "Рӯйхати провайдерҳои пайвастшуда")}</CardTitle>
                   <CardDescription>{tr("Партнеры и апстримы", "Partners and upstreams", "Шарикон ва апстримҳо")}</CardDescription>
@@ -467,7 +510,7 @@ const onSubmit = async (e: React.FormEvent) => {
                 <CardContent>
                   <ul className="grid gap-2 md:grid-cols-2">
                     {providers.map((p) => (
-                      <li key={p.name} className="bg-background rounded-md border px-3 py-2 text-sm">
+                      <li key={p.name} className="rounded-xl border border-border/70 bg-background/40 px-3.5 py-2.5 text-sm transition-colors hover:border-brand/40">
                         {p.name}
                       </li>
                     ))}
@@ -479,10 +522,10 @@ const onSubmit = async (e: React.FormEvent) => {
         </section>
 
         {/* FOUNDATION */}
-        <section className="py-20">
+        <section className="relative py-20 md:py-28">
           <div className="container mx-auto px-4">
             <div className="mx-auto mb-10 max-w-3xl text-center">
-              <h2 className="text-balance text-3xl font-bold md:text-4xl">
+              <h2 className="text-balance text-3xl font-medium md:text-[2.75rem] md:leading-tight">
                 {tr("Надежная сетевая основа", "Reliable Network Foundation", "Асоси боэътимоди шабака")}
               </h2>
               <p className="text-muted-foreground mt-3">
@@ -503,10 +546,10 @@ const onSubmit = async (e: React.FormEvent) => {
                   viewport={{ once: true }}
                   transition={{ duration: 0.45, delay: i * 0.07 }}
                 >
-                  <Card className="h-full border-2">
+                  <Card className="h-full">
                     <CardContent className="p-6">
-                      <div className="bg-primary/10 mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg">
-                        <f.icon className="text-primary h-5 w-5" />
+                      <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-brand to-brand-violet text-white shadow-[0_10px_26px_-10px_var(--brand)]">
+                        <f.icon className="h-5 w-5" />
                       </div>
                       <div className="font-semibold">{f.title}</div>
                       <div className="text-muted-foreground mt-2 text-sm">{f.desc}</div>
@@ -519,9 +562,9 @@ const onSubmit = async (e: React.FormEvent) => {
         </section>
 
         {/* LOCATION + CONTACTS */}
-        <section className="bg-muted/50 py-20">
+        <section className="relative py-20 md:py-28">
           <div className="container mx-auto grid gap-6 px-4 lg:grid-cols-3">
-        <Card className="border-2 lg:col-span-2">
+        <Card className=" lg:col-span-2">
   <CardHeader>
     <CardTitle>{tr("Локация", "Location", "Ҷойгиршавӣ")}</CardTitle>
     <CardDescription>
@@ -570,7 +613,7 @@ const onSubmit = async (e: React.FormEvent) => {
 </Card>
 
             {/* CONSULT FORM */}
-            <Card className="border-2" id="consult">
+            <Card className="" id="consult">
               <CardHeader>
                 <CardTitle>{tr("Запрос консультации", "Request a Consultation", "Дархости машварат")}</CardTitle>
                 <CardDescription>
@@ -637,7 +680,10 @@ const onSubmit = async (e: React.FormEvent) => {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={sending}>
+                  <FormStatus status={status} />
+
+                  <Button type="submit" size="lg" className="w-full" disabled={sending}>
+                    {sending && <Loader2 className="h-4 w-4 animate-spin" />}
                     {sending ? tr("Отправляем…", "Sending…", "Ирсол мешавад…") : tr("Отправить заявку", "Send request", "Фиристодани дархост")}
                   </Button>
                 </form>

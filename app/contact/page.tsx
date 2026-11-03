@@ -3,15 +3,17 @@
 import type React from "react"
 
 import { Footer } from "@/components/footer"
+import { FormStatus, type FormStatusState } from "@/components/form-status"
 import { Header } from "@/components/header"
+import { PageHero } from "@/components/page-hero"
+import { Reveal } from "@/components/fx/reveal"
+import { SpotlightCard } from "@/components/fx/spotlight-card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useLanguage } from "@/hooks/use-language"
-import { motion } from "framer-motion"
-import { Mail, MapPin, Phone, Send } from "lucide-react"
+import { ArrowUpRight, Loader2, Mail, MapPin, MessageSquare, Phone, Send } from "lucide-react"
 import { useState } from "react"
 
 export default function ContactPage() {
@@ -23,6 +25,7 @@ export default function ContactPage() {
     message: "",
   })
   const [isSending, setIsSending] = useState(false)
+  const [status, setStatus] = useState<FormStatusState>(null)
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,6 +34,7 @@ export default function ContactPage() {
 
   try {
     setIsSending(true)
+    setStatus(null)
 
     const res = await fetch("/api/contact", {
       method: "POST",
@@ -47,23 +51,27 @@ export default function ContactPage() {
       throw new Error(data?.error || "Send failed")
     }
 
-    alert(
-      t.nav.about === "О компании"
-        ? "Спасибо! Сообщение отправлено. Мы свяжемся с вами в ближайшее время."
-        : t.nav.about === "About"
-          ? "Thanks! Message sent. We will contact you soon."
-          : "Ташаккур! Паём фиристода шуд. Мо бо шумо зуд тамос мегирем.",
-    )
+    setStatus({
+      type: "success",
+      message:
+        t.nav.about === "О компании"
+          ? "Спасибо! Сообщение отправлено. Мы свяжемся с вами в ближайшее время."
+          : t.nav.about === "About"
+            ? "Thanks! Message sent. We will contact you soon."
+            : "Ташаккур! Паём фиристода шуд. Мо бо шумо зуд тамос мегирем.",
+    })
 
     setFormData({ name: "", email: "", phone: "", message: "" })
   } catch (err) {
-    alert(
-      t.nav.about === "О компании"
-        ? "Ошибка отправки. Попробуйте позже."
-        : t.nav.about === "About"
-          ? "Failed to send. Please try again later."
-          : "Хатои фиристодан. Лутфан баъдтар кӯшиш кунед.",
-    )
+    setStatus({
+      type: "error",
+      message:
+        t.nav.about === "О компании"
+          ? "Ошибка отправки. Попробуйте позже."
+          : t.nav.about === "About"
+            ? "Failed to send. Please try again later."
+            : "Хатои фиристодан. Лутфан баъдтар кӯшиш кунед.",
+    })
   } finally {
     setIsSending(false)
   }
@@ -91,103 +99,93 @@ export default function ContactPage() {
           : t.nav.about === "About"
             ? "Dushanbe, 5B M. Mastangulova Street"
             : "Душанбе, кӯчаи М. Мастангулова, хонаи 5Б",
-      link: "#",
+      link: "",
     },
   ]
+
+  const tr = (ru: string, en: string, tj: string) =>
+    t.nav.about === "О компании" ? ru : t.nav.about === "About" ? en : tj
 
   return (
     <div className="min-h-screen">
       <Header />
-      <main className="pt-16">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-20 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mx-auto max-w-3xl text-center"
-            >
-              <h1 className="text-balance text-5xl font-bold">{t.nav.contact}</h1>
-              <p className="text-muted-foreground mt-6 text-pretty text-lg leading-relaxed">
-                {t.nav.about === "О компании"
-                  ? "Свяжитесь с нами для получения дополнительной информации о наших услугах. Мы всегда рады помочь вам."
-                  : t.nav.about === "About"
-                    ? "Contact us for more information about our services. We are always happy to help you."
-                    : "Барои гирифтани маълумоти иловагӣ дар бораи хидматҳои мо бо мо тамос гиред. Мо ҳамеша хурсандем, ки ба шумо кӯмак кунем."}
-              </p>
-            </motion.div>
-          </div>
-        </section>
+      <main>
+        <PageHero
+          icon={MessageSquare}
+          title={t.nav.contact}
+          description={tr(
+            "Свяжитесь с нами для получения дополнительной информации о наших услугах. Мы всегда рады помочь вам.",
+            "Contact us for more information about our services. We are always happy to help you.",
+            "Барои гирифтани маълумоти иловагӣ дар бораи хидматҳои мо бо мо тамос гиред. Мо ҳамеша хурсандем, ки ба шумо кӯмак кунем.",
+          )}
+        />
 
-        {/* Contact Info Cards */}
-        <section className="py-12">
+        <section className="relative pb-24 md:pb-32">
           <div className="container mx-auto px-4">
-            <div className="grid gap-6 md:grid-cols-3">
-              {contactInfo.map((info, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
-                  <Card className="border-2 transition-all hover:border-blue-500 hover:shadow-lg">
-                    <CardContent className="p-6 text-center">
-                      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
-                        <info.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <h3 className="mb-2 font-bold">{info.title}</h3>
-                      <a
-                        href={info.link}
-                        className="text-muted-foreground text-sm transition-colors hover:text-blue-500"
-                      >
-                        {info.value}
-                      </a>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
+            <div className="grid gap-5 lg:grid-cols-[1fr_1.4fr]">
+              {/* Contact channels */}
+              <div className="grid content-start gap-4">
+                {contactInfo.map((info, index) => {
+                  const content = (
+                    <SpotlightCard className="group flex items-center gap-5 p-6">
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand to-brand-violet text-white shadow-[0_12px_30px_-10px_var(--brand)] transition-transform duration-500 group-hover:scale-110">
+                        <info.icon className="h-5 w-5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{info.title}</span>
+                        <span className="mt-1 block text-pretty font-semibold">{info.value}</span>
+                      </span>
+                      {info.link && (
+                        <ArrowUpRight className="h-5 w-5 shrink-0 text-muted-foreground transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand" />
+                      )}
+                    </SpotlightCard>
+                  )
+                  return (
+                    <Reveal key={index} delay={index * 0.08}>
+                      {info.link ? (
+                        <a href={info.link} className="block rounded-3xl">
+                          {content}
+                        </a>
+                      ) : (
+                        content
+                      )}
+                    </Reveal>
+                  )
+                })}
+              </div>
 
-        {/* Contact Form */}
-        <section className="pb-20">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mx-auto max-w-2xl"
-            >
-              <Card className="border-2">
-                <CardContent className="p-8">
-                  <h2 className="mb-6 text-2xl font-bold">
-                    {t.nav.about === "О компании"
-                      ? "Отправить сообщение"
-                      : t.nav.about === "About"
-                        ? "Send a Message"
-                        : "Паём фиристодан"}
+              {/* Form */}
+              <Reveal delay={0.15}>
+                <div className="glass relative overflow-hidden rounded-[2rem] p-6 md:p-10">
+                  <div aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl" />
+                  <h2 className="relative text-2xl font-medium md:text-3xl">
+                    {tr("Отправить сообщение", "Send a Message", "Паём фиристодан")}
                   </h2>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">
-                        {t.nav.about === "О компании" ? "Имя" : t.nav.about === "About" ? "Name" : "Ном"}
-                      </Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder={
-                          t.nav.about === "О компании"
-                            ? "Ваше имя"
-                            : t.nav.about === "About"
-                              ? "Your name"
-                              : "Номи шумо"
-                        }
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                      />
+                  <form onSubmit={handleSubmit} className="relative mt-8 space-y-5">
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">{tr("Имя", "Name", "Ном")}</Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          autoComplete="name"
+                          placeholder={tr("Ваше имя", "Your name", "Номи шумо")}
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">{tr("Телефон", "Phone", "Телефон")}</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          autoComplete="tel"
+                          placeholder="+992 123 456 789"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -195,6 +193,7 @@ export default function ContactPage() {
                       <Input
                         id="email"
                         type="email"
+                        autoComplete="email"
                         placeholder="name@example.com"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -203,56 +202,33 @@ export default function ContactPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">
-                        {t.nav.about === "О компании" ? "Телефон" : t.nav.about === "About" ? "Phone" : "Телефон"}
-                      </Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+992 123 456 789"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="message">
-                        {t.nav.about === "О компании" ? "Сообщение" : t.nav.about === "About" ? "Message" : "Паём"}
-                      </Label>
+                      <Label htmlFor="message">{tr("Сообщение", "Message", "Паём")}</Label>
                       <Textarea
                         id="message"
-                        placeholder={
-                          t.nav.about === "О компании"
-                            ? "Расскажите нам о вашем проекте..."
-                            : t.nav.about === "About"
-                              ? "Tell us about your project..."
-                              : "Дар бораи лоиҳаи худ ба мо нависед..."
-                        }
+                        placeholder={tr(
+                          "Расскажите нам о вашем проекте...",
+                          "Tell us about your project...",
+                          "Дар бораи лоиҳаи худ ба мо нависед...",
+                        )}
                         rows={5}
                         value={formData.message}
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         required
                       />
                     </div>
-<Button type="submit" size="lg" className="w-full" disabled={isSending}>
-  <Send className="mr-2 h-4 w-4" />
-  {isSending
-    ? t.nav.about === "О компании"
-      ? "Отправка..."
-      : t.nav.about === "About"
-        ? "Sending..."
-        : "Фиристода истодааст..."
-    : t.nav.about === "О компании"
-      ? "Отправить"
-      : t.nav.about === "About"
-        ? "Send Message"
-        : "Фиристодан"}
-</Button>
 
+                    <FormStatus status={status} />
+
+                    <Button type="submit" size="lg" className="group h-14 w-full text-base" disabled={isSending}>
+                      {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />}
+                      {isSending
+                        ? tr("Отправка...", "Sending...", "Фиристода истодааст...")
+                        : tr("Отправить", "Send Message", "Фиристодан")}
+                    </Button>
                   </form>
-                </CardContent>
-              </Card>
-            </motion.div>
+                </div>
+              </Reveal>
+            </div>
           </div>
         </section>
       </main>

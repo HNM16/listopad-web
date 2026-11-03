@@ -2,9 +2,11 @@
 
 import { Footer } from "@/components/footer"
 import { Header } from "@/components/header"
+import { LegalLayout } from "@/components/legal-layout"
+import { PageHero } from "@/components/page-hero"
+import { Reveal } from "@/components/fx/reveal"
 import { useLanguage } from "@/hooks/use-language"
-import { motion } from "framer-motion"
-import { ShieldCheck } from "lucide-react"
+import { Mail, ShieldCheck } from "lucide-react"
 
 export default function TermsPage() {
   const { t } = useLanguage()
@@ -202,97 +204,47 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen">
       <Header />
+      <main>
+        <PageHero
+          icon={ShieldCheck}
+          eyebrow="v2.0 2026"
+          title={tr("Условия предоставления услуг", "Terms of Service", "Шартҳои хизматрасонӣ")}
+          description={tr(
+            "Полный перечень правил и обязательств при использовании платформы Listopad.tj",
+            "Complete list of rules and obligations when using the Listopad.tj platform",
+            "Рӯйхати пурраи қоидаҳо ва уҳдадориҳо ҳангоми истифодаи платформаи Listopad.tj",
+          )}
+        />
 
-      <main className="pt-16">
-        {/* HERO */}
-        <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50 py-24 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
-          <div className="container mx-auto px-4 text-center">
-            <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="mb-8 flex justify-center"
-            >
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-xl shadow-blue-500/20">
-                <ShieldCheck className="h-10 w-10 text-white" />
-              </div>
-            </motion.div>
-
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white md:text-6xl">
-              {tr("Условия предоставления услуг", "Terms of Service", "Шартҳои хизматрасонӣ")}
-            </h1>
-
-            <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg">
-              {tr(
-                "Полный перечень правил и обязательств при использовании платформы Listopad.tj",
-                "Complete list of rules and obligations when using the Listopad.tj platform",
-                "Рӯйхати пурраи қоидаҳо ва уҳдадориҳо ҳангоми истифодаи платформаи Listopad.tj"
-              )}
-            </p>
-            
-            <div className="mt-8 flex justify-center gap-4 text-sm font-medium">
-              <span className="rounded-full bg-blue-100 px-4 py-1.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                v2.0 2026
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* TERMS CONTENT */}
-        <section className="bg-white py-20 dark:bg-gray-950">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto max-w-4xl">
-              <div className="grid gap-6">
-                {sections.map((s, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                    className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-gray-50/50 p-8 transition-all hover:border-blue-200 hover:bg-white hover:shadow-xl dark:border-gray-800 dark:bg-gray-900/50 dark:hover:border-blue-900/50 dark:hover:bg-gray-900"
-                  >
-                    <div className="relative z-10">
-                      <h2 className="mb-4 text-xl font-bold text-gray-900 group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400">
-                        {s.title}
-                      </h2>
-                      <p className="text-base leading-relaxed text-gray-600 dark:text-gray-400">
-                        {s.text}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Company Details Card */}
-              <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                className="mt-16 overflow-hidden rounded-3xl bg-slate-900 p-1 text-white shadow-2xl"
-              >
-                <div className="rounded-[calc(1.5rem-1px)] bg-slate-900 p-10">
-                  <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
+        <LegalLayout
+          sections={sections.map((s) => ({ title: s.title, body: s.text }))}
+          footer={
+            <Reveal className="pt-8">
+              <div className="ring-gradient rounded-[2rem]">
+                <div className="glass relative overflow-hidden rounded-[inherit] p-8 md:p-10">
+                  <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand/20 blur-3xl" />
+                  <div className="relative flex flex-col items-start justify-between gap-8 md:flex-row md:items-center">
                     <div>
-                      <h3 className="text-2xl font-bold">Listopad.tj</h3>
-                      <p className="mt-2 text-slate-400">ООО «Лидер Консалтинг»</p>
-                      <div className="mt-6 space-y-2 text-sm text-slate-300">
+                      <h3 className="font-display text-2xl font-medium">Listopad.tj</h3>
+                      <p className="mt-2 text-muted-foreground">ООО «Лидер Консалтинг»</p>
+                      <div className="mt-6 space-y-1.5 text-sm text-muted-foreground">
                         <p>ИНН: 010092118</p>
                         <p>{tr("Адрес: г. Душанбе, ул. Бухоро, 13", "Address: 13 Bukhoro St, Dushanbe", "Суроға: ш. Душанбе, к. Бухоро, 13")}</p>
                       </div>
                     </div>
-                    <div className="flex flex-col gap-4">
-                      <a 
-                        href="mailto:support@listopad.tj"
-                        className="transition-hover rounded-full bg-blue-600 px-8 py-3 text-center font-semibold hover:bg-blue-500"
-                      >
-                        support@listopad.tj
-                      </a>
-                    </div>
+                    <a
+                      href="mailto:support@listopad.tj"
+                      className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,var(--brand-cyan)_-20%,var(--brand)_45%,var(--brand-violet)_140%)] px-7 py-3 font-semibold text-white shadow-[0_12px_30px_-10px_var(--brand)] transition-all hover:brightness-110"
+                    >
+                      <Mail className="h-4 w-4" />
+                      support@listopad.tj
+                    </a>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
+              </div>
+            </Reveal>
+          }
+        />
       </main>
 
       <Footer />

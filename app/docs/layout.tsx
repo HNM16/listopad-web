@@ -2,7 +2,10 @@
 
 import { Footer } from "@/components/footer"
 import { Header } from "@/components/header"
+import { PageHero } from "@/components/page-hero"
 import { useLanguage } from "@/hooks/use-language"
+import { motion } from "framer-motion"
+import { BookOpen, Download } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -45,61 +48,60 @@ export default function DocsLayout({
     <div className="min-h-screen">
       <Header />
 
-      <main className="pt-16">
-        <section className="border-b bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 py-14 dark:from-slate-950 dark:via-slate-900 dark:to-blue-950">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl">
-              <h1 className="text-4xl font-bold md:text-5xl">{labels.overview}</h1>
-              <p className="mt-4 text-lg text-muted-foreground">
-                {tr(
-                  "Техническая документация по панели управления и облачным сервисам Listopad Cloud.",
-                  "Technical documentation for the Listopad Cloud control panel and cloud services.",
-                  "Ҳуҷҷатҳои техникӣ барои панели идоракунӣ ва хизматрасониҳои абрии Listopad Cloud.",
-                )}
-              </p>
-            </div>
-          </div>
-        </section>
+      <main>
+        <PageHero
+          icon={BookOpen}
+          className="md:pb-16"
+          title={labels.overview}
+          description={tr(
+            "Техническая документация по панели управления и облачным сервисам Listopad Cloud.",
+            "Technical documentation for the Listopad Cloud control panel and cloud services.",
+            "Ҳуҷҷатҳои техникӣ барои панели идоракунӣ ва хизматрасониҳои абрии Listopad Cloud.",
+          )}
+        />
 
-        <section className="container mx-auto px-4 py-10">
-          <div className="grid gap-10 lg:grid-cols-[260px_minmax(0,1fr)]">
-            <aside className="lg:sticky lg:top-24 lg:self-start">
-              <div className="rounded-2xl border bg-card p-4 shadow-sm">
-                <div className="mb-3 text-sm font-semibold text-muted-foreground">
+        <section className="container mx-auto px-4 pb-24">
+          <div className="grid gap-8 lg:grid-cols-[270px_minmax(0,1fr)] lg:gap-12">
+            <aside className="lg:sticky lg:top-28 lg:self-start">
+              <div className="glass rounded-3xl p-3">
+                <div className="px-3 pb-2 pt-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {labels.overview}
                 </div>
 
-                <nav className="space-y-1">
+                <nav className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
                   {navItems.map((item) => {
                     const isActive = pathname === item.href
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                          isActive
-                            ? "bg-blue-500 text-white hover:bg-blue-500"
-                            : "hover:bg-muted"
+                        aria-current={isActive ? "page" : undefined}
+                        className={`relative shrink-0 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                          isActive ? "text-white" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                         }`}
                       >
-                        {labels[item.key]}
+                        {isActive && (
+                          <motion.span
+                            layoutId="docs-active"
+                            className="absolute inset-0 rounded-xl bg-gradient-to-r from-brand to-brand-violet shadow-[0_8px_24px_-10px_var(--brand)]"
+                            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                          />
+                        )}
+                        <span className="relative">{labels[item.key]}</span>
                       </Link>
                     )
                   })}
                 </nav>
 
-                <div className="mt-4 border-t pt-4">
+                <div className="mt-3 border-t border-border/60 pt-3">
                   <a
                     href="/docs/Listopad_Cloud_Documentation.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-lg px-3 py-2 text-sm text-blue-600 transition-colors hover:bg-muted dark:text-blue-400"
+                    className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-brand transition-colors hover:bg-accent/60"
                   >
-                    {tr(
-                      "Скачать PDF",
-                      "Download PDF",
-                      "PDF-ро зеркашӣ кунед",
-                    )}
+                    <Download className="h-4 w-4" />
+                    {tr("Скачать PDF", "Download PDF", "PDF-ро зеркашӣ кунед")}
                   </a>
                 </div>
               </div>

@@ -1,22 +1,26 @@
 'use client'
 
 import * as React from 'react'
-import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import { ThemeProvider as NextThemesProvider, useTheme } from 'next-themes'
 import Cookies from 'js-cookie'
 
-export function ThemeProvider({ children, ...props }: any) {
-  // Функция для записи темы в куки при изменении
-  const handleThemeChange = (value: string | undefined) => {
-    if (value) {
-      Cookies.set('theme', value, { expires: 365, path: '/' })
-    }
-  }
+/**
+ * Mirrors the chosen theme into a cookie so the server (app/layout.tsx)
+ * can render the right theme class on the first byte.
+ * next-themes has no change callback, so we observe it from inside the provider.
+ */
+function ThemeCookieSync() {
+  const { theme } = useTheme()
+  React.useEffect(() => {
+    if (theme) Cookies.set('theme', theme, { expires: 365, path: '/', sameSite: 'lax' })
+  }, [theme])
+  return null
+}
 
+export function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
   return (
-    <NextThemesProvider 
-      {...props} 
-      onValueChange={handleThemeChange}
-    >
+    <NextThemesProvider {...props}>
+      <ThemeCookieSync />
       {children}
     </NextThemesProvider>
   )
