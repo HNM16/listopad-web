@@ -1,0 +1,17 @@
+"use client"
+
+import { useLanguage } from "@/hooks/use-language"
+import { useRef } from "react"
+
+
+export function AboutProducts() {
+const { t } = useLanguage()
+  const ref = useRef(null)
+
+
+  return(
+	<section id='products'>
+
+	</section>
+  )
+}

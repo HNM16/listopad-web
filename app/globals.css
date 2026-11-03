@@ -1,0 +1,59 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Регистрация переменных для Tailwind v4 */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-border: var(--border);
+  
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-heading: "Prosto One", system-ui, sans-serif;
+}
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --primary: #008fff;
+  --border: #e5e7eb;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --primary: #008fff;
+  --border: #27272a;
+}
+
+@layer base {
+  *, ::after, ::before {
+    border-color: var(--border);
+  }
+
+  body {
+    /* Используем нативные переменные вместо @apply, чтобы избежать ошибок компиляции */
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+/* Убираем глобальные переходы, чтобы не моргало */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
